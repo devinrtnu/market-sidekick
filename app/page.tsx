@@ -22,7 +22,7 @@ export default function Home() {
             .
           </li>
           <li className="tracking-[-.01em] mb-2">
-            Save and see your changes instantls.
+            Save and see your changes instantly.
           </li>
           <li className="tracking-[-.01em]">
             Explore our{" "}
