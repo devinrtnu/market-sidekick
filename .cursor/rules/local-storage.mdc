@@ -1,0 +1,330 @@
+---
+description: Type-safe Local Storage utilities with Zod validation for client-side persistence
+globs: **/*.ts, **/*.tsx
+---
+
+# Local Storage Utilities
+
+This project includes type-safe local storage utilities built with Zod validation to provide consistent, schema-validated data persistence in the browser. The utilities are designed to work seamlessly with Next.js and React, handling SSR concerns and providing hooks for easy integration.
+
+## When to Use Local Storage
+
+Use local storage for:
+- User preferences (theme, language, UI settings)
+- Form drafts and works-in-progress
+- Offline-first capabilities
+- Caching data between sessions
+- Persisting application state without a backend
+- Low-sensitivity data that doesn't require server-side storage
+
+Do not use for:
+- Sensitive user data (personal info, authentication tokens)
+- Large amounts of data (localStorage is limited to ~5MB)
+- Critical application state that must persist across devices
+- Data that needs server validation before use
+
+## Available Utilities
+
+### 1. Basic Local Storage
+
+The `LocalStorage` class provides a type-safe wrapper around the browser's localStorage API with Zod schema validation.
+
+```typescript
+import { z } from 'zod';
+import { LocalStorage } from '@/lib/storage';
+
+// Define schema
+const UserPrefsSchema = z.object({
+  theme: z.enum(['light', 'dark', 'system']),
+  fontSize: z.number().min(10).max(24)
+});
+
+// Create storage instance
+const prefsStorage = new LocalStorage(
+  'user-prefs', 
+  UserPrefsSchema,
+  { prefix: 'app' } // Optional prefix for key namespace
+);
+
+// Usage
+const prefs = prefsStorage.get();
+prefsStorage.set({ theme: 'dark', fontSize: 16 });
+prefsStorage.remove();
+```
+
+### 2. Collection Storage
+
+The `CollectionStorage` class provides CRUD operations for collections of items with IDs.
+
+```typescript
+import { z } from 'zod';
+import { CollectionStorage } from '@/lib/storage';
+
+// Define schema
+const TaskSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1),
+  completed: z.boolean(),
+  createdAt: z.number()
+});
+
+// Create collection storage
+const taskStorage = new CollectionStorage(
+  'tasks',
+  TaskSchema,
+  { prefix: 'app' }
+);
+
+// Usage
+const allTasks = taskStorage.getAll();
+const task = taskStorage.getById('task-1');
+taskStorage.add({ id: 'task-3', title: 'New Task', completed: false, createdAt: Date.now() });
+taskStorage.update({ id: 'task-2', title: 'Updated Task', completed: true, createdAt: 1234567890 });
+taskStorage.remove('task-1');
+taskStorage.clear();
+```
+
+### 3. React Hooks
+
+For React components, use the provided hooks for seamless integration.
+
+#### useLocalStorage
+
+```typescript
+import { z } from 'zod';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+
+function ThemeSettings() {
+  const ThemeSchema = z.object({
+    mode: z.enum(['light', 'dark', 'system']),
+    contrast: z.enum(['normal', 'high']),
+  });
+  
+  // Returns [value, setValue, removeValue]
+  const [theme, setTheme, resetTheme] = useLocalStorage(
+    'theme-settings',
+    ThemeSchema,
+    { mode: 'system', contrast: 'normal' }, // Default value
+    { prefix: 'app' } // Options
+  );
+  
+  return (
+    <div>
+      <select 
+        value={theme.mode} 
+        onChange={(e) => setTheme({ ...theme, mode: e.target.value as any })}
+      >
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="system">System</option>
+      </select>
+      <button onClick={() => resetTheme()}>Reset</button>
+    </div>
+  );
+}
+```
+
+#### useCollection
+
+```typescript
+import { z } from 'zod';
+import { useCollection } from '@/hooks/useLocalStorage';
+
+function TaskList() {
+  const TaskSchema = z.object({
+    id: z.string(),
+    title: z.string().min(1),
+    completed: z.boolean(),
+    createdAt: z.number()
+  });
+  
+  const {
+    items: tasks,
+    getItem: getTask,
+    addItem: addTask,
+    updateItem: updateTask,
+    removeItem: removeTask,
+    removeAll: clearTasks
+  } = useCollection('tasks', TaskSchema, { prefix: 'app' });
+  
+  const handleAdd = () => {
+    addTask({
+      id: crypto.randomUUID(),
+      title: 'New Task',
+      completed: false,
+      createdAt: Date.now()
+    });
+  };
+  
+  return (
+    <div>
+      <button onClick={handleAdd}>Add Task</button>
+      <ul>
+        {tasks.map(task => (
+          <li key={task.id}>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => updateTask({ ...task, completed: !task.completed })}
+            />
+            {task.title}
+            <button onClick={() => removeTask(task.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+      {tasks.length > 0 && (
+        <button onClick={clearTasks}>Clear All</button>
+      )}
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+### Server-Side Rendering Considerations
+
+- Always use the `'use client'` directive when using these hooks
+- For components that use local storage, implement a loading state for SSR
+- Use the `isClient` pattern to avoid hydration mismatches:
+
+```tsx
+function MyComponent() {
+  const [isClient, setIsClient] = useState(false);
+  
+  // Our hooks already handle SSR internally
+  const [data, setData] = useLocalStorage(...);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Show a skeleton loader during SSR and initial render
+  if (!isClient) {
+    return <LoadingSkeleton />;
+  }
+  
+  return <ActualComponent data={data} />;
+}
+```
+
+### Prefix Conventions
+
+Use consistent prefixes to avoid key collisions:
+
+- `app` - For application-wide settings
+- `user` - For user-specific data
+- `feature:name` - For feature-specific storage
+
+Example:
+```typescript
+// User settings
+useLocalStorage('settings', SettingsSchema, defaultSettings, { prefix: 'user' });
+
+// Feature-specific data
+useCollection('items', ItemSchema, { prefix: 'feature:dashboard' });
+```
+
+### Schema Evolution
+
+When schema changes:
+
+1. Version your schemas with a version field
+2. Implement migration logic:
+
+```typescript
+const UserSettingsV1Schema = z.object({
+  version: z.literal(1),
+  theme: z.enum(['light', 'dark']),
+});
+
+const UserSettingsV2Schema = z.object({
+  version: z.literal(2),
+  theme: z.enum(['light', 'dark', 'system']),
+  fontSize: z.number().default(16),
+});
+
+// Combined schema with migrations
+const UserSettingsSchema = z.union([
+  UserSettingsV1Schema,
+  UserSettingsV2Schema,
+]);
+
+function migrateSettings(settings: any) {
+  // Migrate from v1 to v2
+  if (settings?.version === 1) {
+    return {
+      version: 2,
+      theme: settings.theme,
+      fontSize: 16,
+    };
+  }
+  
+  // Return as-is if already v2 or default
+  return settings;
+}
+
+function useSettings() {
+  const [settings, setSettings] = useLocalStorage(
+    'settings',
+    UserSettingsSchema,
+    { version: 2, theme: 'system', fontSize: 16 },
+    { prefix: 'app' }
+  );
+  
+  // Migrate on mount if needed
+  useEffect(() => {
+    if (settings.version < 2) {
+      setSettings(migrateSettings(settings));
+    }
+  }, [settings.version]);
+  
+  return [settings, setSettings];
+}
+```
+
+### Security Considerations
+
+- **Never** store sensitive information in localStorage (passwords, tokens, PII)
+- Implement data expiry for cached data:
+
+```typescript
+const CachedDataSchema = z.object({
+  data: z.any(),
+  expiresAt: z.number(),
+});
+
+function useCachedData(key, ttlMs = 3600000) { // 1 hour default
+  const [cache, setCache] = useLocalStorage(
+    key,
+    CachedDataSchema,
+    { data: null, expiresAt: 0 }
+  );
+  
+  const setCacheWithExpiry = (data) => {
+    setCache({
+      data,
+      expiresAt: Date.now() + ttlMs,
+    });
+  };
+  
+  // Check if data is expired
+  const validData = useMemo(() => {
+    if (!cache.data || cache.expiresAt < Date.now()) {
+      return null;
+    }
+    return cache.data;
+  }, [cache]);
+  
+  return [validData, setCacheWithExpiry];
+}
+```
+
+## Working Example
+
+A full example is available in the codebase at:
+- `/hooks/useLocalStorage.ts` - React hooks
+- `/lib/storage.ts` - Core utilities
+- `/app/examples/local-storage/page.tsx` - Example implementation
+
+View the example by running the application and navigating to `/examples/local-storage`. 

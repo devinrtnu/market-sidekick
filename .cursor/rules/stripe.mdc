@@ -1,0 +1,145 @@
+---
+description: Stripe integration best practices for modern Next.js applications with subscription models
+globs: 
+alwaysApply: false
+---
+
+# Stripe Integration Best Practices
+
+## Installation
+```bash
+# Client-side Stripe.js
+npm install @stripe/stripe-js
+
+# Server-side Stripe API
+npm install stripe
+
+# Stripe webhook handling (optional)
+npm install stripe-webhook-middleware
+```
+
+## Setup & Configuration
+- Use environment variables for Stripe API keys
+- Initialize Stripe client in server-side code only
+- Use separate API keys for development and production
+- Configure webhook endpoints with proper secret validation
+- Set up proper error handling for Stripe client initialization
+- Use TypeScript types from @stripe/stripe-js for better type safety
+- Implement proper logging for Stripe operations
+
+## API Security
+- Never expose Stripe secret keys in client-side code
+- Use Stripe.js and Elements to securely collect payment information
+- Implement proper CORS settings for API endpoints
+- Validate webhook signatures using Stripe's verification utilities
+- Implement rate limiting for payment endpoints
+- Use HTTPS for all communication
+- Implement proper error handling that doesn't expose sensitive information
+
+## Payment Processing
+- Use Payment Intents API for modern payment processing
+- Implement 3D Secure authentication when required
+- Handle card decline scenarios gracefully
+- Provide clear error messages for payment failures
+- Implement idempotency keys for critical operations
+- Use automatic payment methods when appropriate
+- Implement proper retry logic for failed payments
+
+## Subscription Model
+- Design a clear subscription tier structure
+- Use Stripe Products and Prices for subscription offerings
+- Implement proper trial period handling
+- Handle subscription cancellations and reactivations gracefully
+- Implement proration for subscription changes
+- Use webhooks to sync subscription status with your database
+- Implement proper invoice handling and payment failures
+
+## Customer Management
+- Create and manage Stripe Customers for users
+- Store Stripe Customer ID in your database
+- Link payment methods to customers
+- Implement proper customer metadata
+- Use customer portal for self-service subscription management
+- Implement proper error handling for customer operations
+- Use proper authentication before accessing customer data
+
+## Webhook Implementation
+- Implement webhook handlers for all relevant Stripe events
+- Validate webhook signatures using Stripe's verification utilities
+- Process webhooks idempotently to handle duplicate events
+- Implement proper error handling for webhook processing
+- Use proper database transactions in webhook handlers
+- Implement logging for webhook events
+- Set up proper testing for webhook handlers
+
+## Customer Portal
+- Use Stripe's Customer Portal for subscription management
+- Configure portal with appropriate branding and features
+- Implement proper return URLs
+- Handle portal session creation securely
+- Properly authenticate users before creating portal sessions
+- Implement proper error handling for portal operations
+- Test portal flows thoroughly
+
+## Invoicing
+- Configure invoice templates appropriately
+- Implement proper handling for invoice payment failures
+- Set up notification emails for invoice events
+- Implement handling for past-due invoices
+- Use proper invoice item descriptions
+- Implement proper tax handling if required
+- Store invoice records in your database when needed
+
+## Checkout Sessions
+- Use Checkout Sessions for one-time payments and subscription sign-ups
+- Configure success and cancel URLs
+- Implement proper session expiration handling
+- Use prefilled customer information when available
+- Implement proper product and price configuration
+- Handle successful checkout completion via webhooks
+- Implement proper error handling for checkout sessions
+
+## Testing
+- Use Stripe test mode for development
+- Test with Stripe's test cards and bank accounts
+- Implement proper test data setup and teardown
+- Test webhook handlers with Stripe CLI
+- Test subscription lifecycle events
+- Test error conditions and edge cases
+- Use proper test environment isolation
+
+## UI Integration
+- Use Stripe Elements for secure payment form UI
+- Implement proper loading and error states
+- Show clear pricing information
+- Implement proper confirmation and success screens
+- Use proper form validation
+- Implement responsive design for payment forms
+- Follow Stripe's design guidelines for payment forms
+
+## Error Handling
+- Implement proper error handling for all Stripe operations
+- Provide user-friendly error messages
+- Log detailed error information for debugging
+- Handle network failures gracefully
+- Implement proper fallback mechanisms
+- Use error codes to handle specific error types differently
+- Test error scenarios thoroughly
+
+## Database Synchronization
+- Sync subscription status with your database
+- Use webhooks to keep data in sync
+- Implement proper database transactions
+- Handle race conditions appropriately
+- Use proper indexing for Stripe-related fields
+- Implement soft delete patterns for subscription data
+- Create audit logs for critical operations
+
+## Compliance & Legal
+- Implement proper terms of service and privacy policy
+- Comply with regional tax laws and regulations
+- Implement proper receipt generation
+- Follow PCI compliance guidelines
+- Implement proper data retention policies
+- Provide clear subscription terms to users
+- Implement proper cancellation and refund policies 

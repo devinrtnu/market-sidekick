@@ -1,0 +1,117 @@
+---
+description: Vercel AI SDK integration best practices for modern Next.js applications
+globs: 
+alwaysApply: false
+---
+---
+description: Vercel AI SDK integration best practices for modern Next.js applications
+globs: **/*ai*.ts, **/*ai*.tsx, **/chat/*.ts, **/chat/*.tsx
+---
+
+# Vercel AI SDK Best Practices
+
+## Package Installation
+```bash
+# Core AI SDK package
+npm install ai
+
+# Provider-specific packages from AI SDK (not from the providers directly)
+npm install @ai-sdk/openai    # For OpenAI
+npm install @ai-sdk/anthropic # For Anthropic
+npm install @ai-sdk/google    # For Google
+npm install @ai-sdk/mistral   # For Mistral
+# etc.
+```
+
+## Important Notes
+- Always use the AI SDK's provider packages (@ai-sdk/*) instead of installing provider packages directly
+- Reference the official documentation at https://sdk.vercel.ai/docs for the latest API changes
+- Each provider is accessed through the AI SDK's pattern, not through the provider's own patterns
+
+## Basic Implementation
+
+### Server-Side Route Handler
+```typescript
+// app/api/chat/route.ts
+import { openai } from '@ai-sdk/openai'
+import { streamText } from 'ai'
+
+export const runtime = 'edge'
+export const maxDuration = 30
+
+export async function POST(req: Request) {
+  const { messages } = await req.json()
+  
+  const result = streamText({
+    model: openai('gpt-4o'),
+    messages,
+  })
+  
+  return result.toDataStreamResponse()
+}
+```
+
+### Client-Side Component
+```typescript
+'use client'
+
+import { useChat } from '@ai-sdk/react'
+
+export default function ChatComponent() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat()
+  
+  return (
+    <div>
+      {messages.map(message => (
+        <div key={message.id}>
+          {message.role === 'user' ? 'User: ' : 'AI: '}
+          {message.content}
+        </div>
+      ))}
+      
+      <form onSubmit={handleSubmit}>
+        <input 
+          value={input} 
+          onChange={handleInputChange} 
+          placeholder="Type a message..." 
+        />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  )
+}
+```
+
+## Key Concepts
+
+### Provider Setup
+- Import providers from their respective @ai-sdk/* packages
+- Use the provider's function to create a model instance with the right model name
+- Never create provider instances directly with API keys (handled by the AI SDK)
+
+### Data Streaming
+- Use `streamText` for generating text
+- Use `streamObject` for generating structured data
+- Use `toDataStreamResponse()` to convert the result to a stream response
+
+### UI Integration
+- Use `useChat` for chat interfaces
+- Use `useCompletion` for single-input interfaces
+- Use `useObjectCompletion` for structured output
+
+### Environment Variables
+- Store provider API keys in environment variables
+- For OpenAI: OPENAI_API_KEY
+- For Anthropic: ANTHROPIC_API_KEY
+- For all other providers, consult the AI SDK documentation
+
+## Tool Usage
+Follow the AI SDK's pattern for tool definitions and usage, not the raw provider implementations.
+
+## Error Handling
+Implement proper error handling with the AI SDK's error types and patterns.
+
+## Security Best Practices
+- Never expose API keys in client-side code
+- Use environment variables for sensitive credentials
+- Implement proper rate limiting and monitoring

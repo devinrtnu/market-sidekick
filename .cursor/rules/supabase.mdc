@@ -1,0 +1,841 @@
+---
+description: Supabase integration best practices for modern Next.js applications
+globs: 
+alwaysApply: false
+---
+---
+description: Supabase integration best practices for modern Next.js applications
+globs: **/*.ts, **/*.tsx
+alwaysApply: false
+---
+
+# Supabase Integration Best Practices
+
+## Installation
+```bash
+npm install @supabase/supabase-js @supabase/ssr
+```
+
+> **Note:** The older `@supabase/auth-helpers-nextjs` package is deprecated. Always use `@supabase/ssr` for Next.js 15+ projects.
+
+## Environment Variables
+```
+NEXT_PUBLIC_SUPABASE_URL=<your-supabase-project-url>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<your-supabase-service-role-key>  # Optional, for admin operations
+```
+
+
+## Project Setup Checklist
+- Create a Supabase project at @https://supabase.com
+- Copy project URL and anon key from the Supabase dashboard
+- Add environment variables to `.env.local`
+- Install required packages
+- Set up utility functions for Supabase clients
+- Create middleware for session management
+- Implement auth callback route
+- Create authentication components
+
+## Client Utility Functions
+
+### Server-Side Client
+Create a file at `lib/supabase/server.ts`:
+
+```typescript
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export async function createClient() {
+  const cookieStore = cookies()
+  
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  )
+}
+```
+
+### Client-Side Client
+Create a file at `lib/supabase/client.ts`:
+
+```typescript
+'use client'
+
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+```
+
+## Middleware Setup
+Create a `middleware.ts` file in the project root:
+
+```typescript
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // Refresh session if expired - required for Server Components
+  await supabase.auth.getSession()
+
+  return supabaseResponse
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}
+```
+
+## Auth Callback Route
+Create a file at `app/auth/callback/route.ts`:
+
+```typescript
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function GET(request: NextRequest) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  
+  if (code) {
+    const supabase = await createClient()
+    await supabase.auth.exchangeCodeForSession(code)
+  }
+
+  // URL to redirect to after sign in process completes
+  return NextResponse.redirect(new URL('/', request.url))
+}
+```
+
+## Authentication Components
+
+When implementing authentication components, leverage shadcn/ui components for a consistent, accessible, and visually appealing design. This allows you to focus on the authentication logic while benefiting from a professional UI system.
+
+### Prerequisites
+
+Ensure shadcn/ui is installed in your project:
+
+```bash
+# Install shadcn component CLI
+npx shadcn@latest init
+
+# Install required form components
+npx shadcn@latest add form
+npx shadcn@latest add input
+npx shadcn@latest add button
+npx shadcn@latest add card
+npx shadcn@latest add label
+npx shadcn@latest add alert
+```
+
+### Sign Up Component with shadcn/ui
+```typescript
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+
+// Define form schema
+const signUpSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+})
+
+type SignUpValues = z.infer<typeof signUpSchema>
+
+export function SignUp() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const supabase = createClient()
+  
+  const form = useForm<SignUpValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = async (values: SignUpValues) => {
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+    
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      
+      if (error) throw error
+      
+      setSuccess('Check your email for the confirmation link')
+    } catch (error: any) {
+      setError(error.message || 'An error occurred during sign up')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>Enter your email below to create your account</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {success && (
+          <Alert className="mb-4">
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
+        )}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create account'}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="flex justify-center">
+        <p className="text-sm text-muted-foreground">
+          Already have an account? <a href="/signin" className="underline">Sign in</a>
+        </p>
+      </CardFooter>
+    </Card>
+  )
+}
+```
+
+### Sign In Component with shadcn/ui
+```typescript
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+
+// Define form schema
+const signInSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(1, { message: 'Password is required' }),
+})
+
+type SignInValues = z.infer<typeof signInSchema>
+
+export function SignIn() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const supabase = createClient()
+  
+  const form = useForm<SignInValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = async (values: SignInValues) => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      })
+      
+      if (error) throw error
+    } catch (error: any) {
+      setError(error.message || 'Invalid email or password')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Sign in</CardTitle>
+        <CardDescription>Enter your email and password to sign in to your account</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in'}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <Button variant="link" asChild className="px-0">
+          <a href="/reset-password">Forgot password?</a>
+        </Button>
+        <p className="text-sm text-muted-foreground">
+          Don't have an account? <a href="/signup" className="underline">Sign up</a>
+        </p>
+      </CardFooter>
+    </Card>
+  )
+}
+```
+
+### Sign Out Component with shadcn/ui
+```typescript
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+
+export function SignOut() {
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleSignOut = async () => {
+    setLoading(true)
+    
+    try {
+      await supabase.auth.signOut()
+      router.refresh()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Button 
+      variant="outline" 
+      onClick={handleSignOut} 
+      disabled={loading}
+    >
+      {loading ? 'Signing out...' : 'Sign out'}
+    </Button>
+  )
+}
+```
+
+### Reset Password Component with shadcn/ui
+```typescript
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+
+// Define form schema
+const resetPasswordSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+})
+
+type ResetPasswordValues = z.infer<typeof resetPasswordSchema>
+
+export function ResetPassword() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const supabase = createClient()
+  
+  const form = useForm<ResetPasswordValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  })
+
+  const onSubmit = async (values: ResetPasswordValues) => {
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
+      })
+      
+      if (error) throw error
+      
+      setSuccess('Check your email for the password reset link')
+    } catch (error: any) {
+      setError(error.message || 'An error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Reset password</CardTitle>
+        <CardDescription>Enter your email to receive a password reset link</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {success && (
+          <Alert className="mb-4">
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
+        )}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Sending reset link...' : 'Send reset link'}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="flex justify-center">
+        <Button variant="link" asChild>
+          <a href="/signin">Back to sign in</a>
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
+```
+
+### Update Password Component with shadcn/ui
+```typescript
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { useRouter } from 'next/navigation'
+
+// Define form schema
+const updatePasswordSchema = z.object({
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+  confirmPassword: z.string().min(8),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+})
+
+type UpdatePasswordValues = z.infer<typeof updatePasswordSchema>
+
+export function UpdatePassword() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const supabase = createClient()
+  const router = useRouter()
+  
+  // Check if user is authenticated in a password reset flow
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) {
+        router.push('/signin')
+      }
+    }
+    
+    checkSession()
+  }, [router, supabase])
+  
+  const form = useForm<UpdatePasswordValues>({
+    resolver: zodResolver(updatePasswordSchema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
+  })
+
+  const onSubmit = async (values: UpdatePasswordValues) => {
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+    
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: values.password
+      })
+      
+      if (error) throw error
+      
+      setSuccess('Your password has been updated successfully')
+      
+      // Redirect after short delay
+      setTimeout(() => {
+        router.push('/')
+      }, 2000)
+    } catch (error: any) {
+      setError(error.message || 'An error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Update password</CardTitle>
+        <CardDescription>Create a new password for your account</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {success && (
+          <Alert className="mb-4">
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
+        )}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Updating password...' : 'Update password'}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+These shadcn/ui enhanced components provide:
+
+1. Better user experience with proper form validation
+2. Consistent styling with your application's design system
+3. Accessible UI components that follow best practices
+4. Responsive design out of the box
+5. Clear feedback for users during form submission
+
+Remember to add additional dependencies required for the form implementation:
+
+```bash
+npm install react-hook-form @hookform/resolvers zod
+```
+
+## Auth Provider (Optional)
+For global auth state management, create a file at `components/providers/auth-provider.tsx`:
+
+```typescript
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { Session, User } from '@supabase/supabase-js'
+import { useRouter } from 'next/navigation'
+import { createContext, useContext, useEffect, useState } from 'react'
+
+type AuthContextType = {
+  user: User | null
+  session: Session | null
+  isLoading: boolean
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  session: null,
+  isLoading: true,
+})
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const getUser = async () => {
+      setIsLoading(true)
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
+        setUser(session?.user ?? null)
+        
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+          (event, session) => {
+            setSession(session)
+            setUser(session?.user ?? null)
+            router.refresh()
+          }
+        )
+        
+        return () => {
+          authListener.subscription.unsubscribe()
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    getUser()
+  }, [supabase, router])
+
+  return (
+    <AuthContext.Provider value={{ user, session, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
+```
+
+## Protected Routes
+Create a function to check authentication in Server Components:
+
+```typescript
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+export async function checkAuth() {
+  const supabase = await createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session) {
+    redirect('/signin')
+  }
+  
+  return session
+}
+```
+
+## Database Access Patterns
+- Use the Supabase client for data fetching and manipulation
+- Implement proper filtering, sorting, and pagination
+- Use Row Level Security (RLS) policies for data access control
+- Implement proper error handling for database operations
+- Use transactions for related operations
+- Leverage optimistic updates for better user experience
+
+## Row Level Security (RLS)
+- Always implement RLS policies for all tables
+- Create granular policies based on user roles and permissions
+- Define separate policies for SELECT, INSERT, UPDATE, and DELETE operations
+- Use security definer functions for complex authorization rules
+- Never disable RLS in production environments
+
+## Security Best Practices
+- Never expose API keys in client-side code
+- Use environment variables for sensitive configuration
+- Implement proper input sanitization and validation
+- Use parameterized queries to prevent SQL injection
+- Implement proper error handling that doesn't expose sensitive information
+- Use HTTPS for all communication
+- Implement proper access control mechanisms
+
+## Implementation Notes for AI Assistants
+When helping users implement Supabase integration:
+
+1. Ask for their Supabase project URL and anon key
+2. Verify if they need additional features like social auth or magic links
+3. Check if they need to customize the redirect URLs
+4. Ask about any specific data models that need RLS policies
+5. Determine if they need real-time subscriptions
+6. Check if they need storage functionality
+7. Verify if they're using TypeScript for proper type generation
+8. Ask about existing authentication system if migrating from another solution
+
+Always emphasize security best practices and make sure users understand the importance of implementing proper RLS policies for their database tables.

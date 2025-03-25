@@ -1,0 +1,404 @@
+---
+description: "Comprehensive guide for shadcn/ui components, blocks, and charts for modern React applications"
+globs: "**/*.ts, **/*.tsx, **/*.js, **/*.jsx"
+alwaysApply: true
+---
+# Shadcn UI Components, Blocks and Charts
+
+This project uses [shadcn/ui](mdc:https:/ui.shadcn.com) for UI components. These are beautifully designed, accessible components that you can copy and paste into your apps.
+
+## 1. Documentation-First Workflow
+
+**CRITICAL: Always begin by checking the official documentation before implementing any component.**
+
+### Required Documentation Workflow
+
+1. **Identify the component** you need to implement
+2. **Visit the official documentation** at `https://ui.shadcn.com/docs/components/[component-name]`
+3. **Read the entire documentation page** for the component, including:
+   - Component description and purpose
+   - Installation instructions
+   - Available props and variants
+   - Code examples
+   - Special considerations
+   - CSS variables used for theming
+4. **Take note of any dependencies** required by the component
+5. **Check for related components** that are often used together
+6. **Examine the component anatomy** to understand nested structures
+7. **Review the examples section** to understand common patterns
+
+### Implementing Complex UI Patterns
+
+When working with multiple components to create a complex UI:
+
+1. **Map out the component hierarchy** before starting
+2. **Identify parent-child relationships** between components
+3. **Note state management needs** between components
+4. **Check for context providers** required at the top level (e.g., `SidebarProvider`)
+5. **Reference the Blocks section** of the documentation for complete examples
+
+## 2. Installation and Setup
+
+### Initial Installation
+
+```bash
+npx shadcn@latest init
+```
+
+**IMPORTANT**: Always use `npx shadcn@latest` and NOT the deprecated `npx shadcn-ui@latest`
+
+During installation, you'll be asked to:
+- Choose a style (default, new-york)
+- Select a base color
+- Configure component paths
+- Choose CSS variable naming conventions
+
+### Component Installation
+
+Before using any shadcn component, you MUST first install it using the CLI:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+Example component installation:
+```bash
+npx shadcn@latest add button
+npx shadcn@latest add card
+npx shadcn@latest add sidebar
+```
+
+### Project Configuration
+
+The configuration is stored in `components.json` at the root of your project:
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "app/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
+```
+
+## 3. Component Organization and Implementation
+
+### Directory Structure
+- `/components/ui/` - **ONLY** for shadcn components installed via CLI
+- `/components/` - For custom project components built using shadcn components
+
+### Implementation Best Practices
+
+**CRITICAL**:
+1. **NEVER create shadcn components manually** in the `/components/ui/` directory
+2. **NEVER directly modify** existing shadcn components in the `/components/ui/` directory
+3. **ALWAYS use the CLI** to install official components: `npx shadcn@latest add [component-name]`
+4. **NEVER create unofficial variants** of shadcn components - use the provided variant props instead
+5. **ALWAYS verify props and variants** from the official documentation
+
+### Building Custom Components
+
+When building custom components that use shadcn components:
+
+1. Create them outside the `/components/ui/` directory
+2. Import shadcn components from the ui directory
+3. Compose them to create your custom component
+
+```tsx
+// Good - Custom component importing shadcn components
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
+export function SearchForm() {
+  return (
+    <div className="flex gap-2">
+      <Input placeholder="Search..." />
+      <Button type="submit">Search</Button>
+    </div>
+  )
+}
+```
+
+### Handling Component Props and Variants
+
+- **IMPORTANT**: Each shadcn component has its own unique props and variants
+- **ALWAYS check the documentation** for each specific component's props
+- **DO NOT assume** that prop patterns from one component will apply to others
+- Use TypeScript to ensure correct prop usage
+
+## 4. Composing Complex UI Patterns
+
+### Composition Approach
+
+When building complex UI patterns (like dashboards, sidebars, etc.):
+
+1. **Identify your component hierarchy**
+   - Find the top-level container components
+   - Map out nested component relationships
+
+2. **Setup context providers first**
+   - Use provider components at the appropriate level
+   - Example: `<SidebarProvider>` wraps sidebar-related components
+
+3. **Build parent components before children**
+   - Start with layout components
+   - Then implement nested components
+
+4. **Connect state between components appropriately**
+   - Use React context for shared state
+   - Pass props for simple parent-child communication
+
+### Sidebar Implementation Example
+
+The sidebar pattern requires careful composition of components:
+
+```tsx
+// Top-level page component
+export default function DashboardPage() {
+  return (
+    <SidebarProvider> {/* Context provider first */}
+      <AppSidebar /> {/* Main sidebar component */}
+      <SidebarInset> {/* Content area */}
+        <header>...</header>
+        <main>...</main>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
+
+// Custom sidebar component
+export function AppSidebar() {
+  return (
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        {/* Header content */}
+      </SidebarHeader>
+      <SidebarContent>
+        {/* Navigation groups */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarMenu>
+            {/* Menu items */}
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <Icon />
+                <span>Menu Item</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter>
+        {/* Footer content */}
+      </SidebarFooter>
+    </Sidebar>
+  )
+}
+```
+
+## 5. Block-Based Development
+
+Shadcn/ui offers "Blocks" - pre-built, full UI sections you can add to your project.
+
+### Adding Blocks
+
+```bash
+npx shadcn@latest add [block-name]
+```
+
+For example:
+```bash
+npx shadcn@latest add sidebar-07
+npx shadcn@latest add dashboard-01
+npx shadcn@latest add auth-01
+```
+
+### Understanding Block Structure
+
+When adding a block:
+
+1. **Multiple files will be created** in your project
+2. **Review all generated files** to understand the structure
+3. **Check for new component dependencies** that might be installed
+4. **Use the block as a reference** for implementing similar patterns
+
+## 6. Client vs Server Components
+
+### Client Components
+- Components with interactivity MUST use the 'use client' directive
+- Examples include:
+  - Interactive UI components (buttons, forms, etc.)
+  - Components that use React hooks
+  - Components that need browser APIs
+
+```tsx
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+
+export function Counter() {
+  const [count, setCount] = useState(0)
+  return (
+    <Button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </Button>
+  )
+}
+```
+
+### Server Components
+- Static layout components should be server components
+- Data fetching should happen in server components when possible
+- Composition root components are typically server components
+
+```tsx
+// No "use client" directive for server components
+import { db } from "@/lib/db"
+import { ProductCard } from "@/components/product-card"
+
+export default async function ProductsPage() {
+  const products = await db.products.findMany()
+  
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  )
+}
+```
+
+## 7. Component-Specific Guidelines
+
+### Sidebar Component
+
+When implementing a sidebar:
+
+1. **Start with SidebarProvider** at the application root
+2. **Configure the Sidebar component** with appropriate props:
+   - `collapsible`: Controls collapse behavior ("icon", "offcanvas", "none")
+   - `variant`: Visual style ("sidebar", "floating", "inset")
+   - `side`: Position ("left" or "right")
+3. **Structure the sidebar** with these nested components:
+   - `SidebarHeader`: For logo, title, or team switcher
+   - `SidebarContent`: For navigation and main content
+   - `SidebarFooter`: For user profile or settings
+4. **Group related items** with `SidebarGroup` and `SidebarGroupLabel`
+5. **Create navigation** with `SidebarMenu` and `SidebarMenuItem`
+6. **Add triggers** with `SidebarTrigger` for toggling
+
+Visit [Sidebar Documentation](mdc:https:/ui.shadcn.com/docs/components/sidebar) for detailed implementation guidance.
+
+### Dialog Component
+
+When implementing a dialog:
+
+1. **Start with the main Dialog component**
+2. **Use DialogTrigger** to open the dialog
+3. **Add DialogContent** to contain the dialog content
+4. **Structure content** with DialogHeader, DialogTitle, DialogDescription
+5. **Add a DialogFooter** for buttons or actions
+
+Visit [Dialog Documentation](mdc:https:/ui.shadcn.com/docs/components/dialog) for detailed implementation guidance.
+
+### Form Components
+
+When implementing forms:
+
+1. **Start with the Form provider** for React Hook Form integration
+2. **Use FormField** for each form control
+3. **Add FormItem** to wrap each field and its label
+4. **Use FormLabel** for visible labels
+5. **Include FormControl** to wrap the actual input component
+6. **Add FormDescription** and FormMessage for help text and errors
+
+Visit [Form Documentation](mdc:https:/ui.shadcn.com/docs/components/form) for detailed implementation guidance.
+
+## 8. Theming and Styling
+
+### CSS Variables
+
+Components use CSS variables for theming with light and dark mode support:
+
+```css
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    /* etc. */
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    /* etc. */
+  }
+}
+```
+
+### Component-Specific Variables
+
+Some components have their own CSS variables:
+
+```css
+/* Sidebar-specific variables */
+@layer base {
+  :root {
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    /* etc. */
+  }
+  
+  .dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    /* etc. */
+  }
+}
+```
+
+**ALWAYS check the component documentation** for component-specific CSS variables.
+
+## 9. Troubleshooting
+
+### Component Not Found
+If you get errors about a component not being found:
+```bash
+npx shadcn@latest add [component-name]
+```
+
+### Version Conflicts
+For React 19 compatibility issues:
+```json
+"overrides": {
+  "react-is": "^19.0.0"
+}
+```
+
+### CSS Issues
+- Check for missing CSS variables in globals.css
+- Ensure the component is being styled with the correct variant props
+
+## 10. Official Resources
+
+- **Documentation**: https://ui.shadcn.com/docs
+- **Components**: https://ui.shadcn.com/docs/components
+- **Blocks**: https://ui.shadcn.com/blocks
+- **GitHub**: https://github.com/shadcn/ui
+- **Discord**: https://discord.gg/shadcn
