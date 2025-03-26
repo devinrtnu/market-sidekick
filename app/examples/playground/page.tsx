@@ -96,8 +96,8 @@ function getRSIColorClass(rsi: number): string {
 
 // Helper function to determine cell background class based on RSI value
 function getRSIBgClass(rsi: number): string {
-  if (rsi >= 70) return "bg-red-50 dark:bg-red-950/20";
-  if (rsi <= 30) return "bg-green-50 dark:bg-green-950/20";
+  if (rsi >= 70) return "bg-red-50 dark:bg-red-950/20 border-l border-red-200 dark:border-red-800";
+  if (rsi <= 30) return "bg-green-50 dark:bg-green-950/20 border-l border-green-200 dark:border-green-800";
   return "";
 }
 
@@ -118,8 +118,8 @@ export default function PlaygroundPage() {
             Monitor key technical indicators for long-term investment decisions
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+        <CardContent className="px-6">
+          <div className="overflow-x-auto -mx-6 px-6 py-1">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-b border-border">
@@ -149,33 +149,35 @@ export default function PlaygroundPage() {
                     key={stock.ticker} 
                     className={`transition-colors hover:bg-muted/50 ${index % 2 === 1 ? 'bg-muted/30' : ''}`}
                   >
-                    <TableCell className="p-3 font-medium">
-                      {stock.ticker}
+                    <TableCell className="p-3">
+                      <span className="px-2 py-1 rounded-md bg-muted font-medium text-foreground inline-block min-w-[65px] text-center">
+                        {stock.ticker}
+                      </span>
                     </TableCell>
                     <TableCell className="p-3 text-right">
-                      <span className="font-mono tabular-nums">
+                      <span className="font-mono tabular-nums text-foreground font-medium">
                         ${stock.price.toFixed(2)}
                       </span>
                     </TableCell>
                     <TableCell className={`p-3 text-right font-mono tabular-nums ${getRSIBgClass(stock.rsiWeekly)}`}>
-                      <span className={getRSIColorClass(stock.rsiWeekly)}>
+                      <div className={`flex items-center justify-end ${getRSIColorClass(stock.rsiWeekly)}`}>
                         {stock.rsiWeekly.toFixed(1)}
-                      </span>
+                      </div>
                     </TableCell>
                     <TableCell className={`p-3 text-right font-mono tabular-nums ${getRSIBgClass(stock.rsiDaily)}`}>
-                      <span className={getRSIColorClass(stock.rsiDaily)}>
+                      <div className={`flex items-center justify-end ${getRSIColorClass(stock.rsiDaily)}`}>
                         {stock.rsiDaily.toFixed(1)}
-                      </span>
+                      </div>
                     </TableCell>
                     <TableCell className="p-3 text-right font-mono tabular-nums">
-                      <span className={getMAComparisonClass(stock.price, stock.ma200Weekly)}>
+                      <div className={`flex items-center justify-end ${getMAComparisonClass(stock.price, stock.ma200Weekly)}`}>
                         ${stock.ma200Weekly.toFixed(2)}
-                      </span>
+                      </div>
                     </TableCell>
                     <TableCell className="p-3 text-right font-mono tabular-nums">
-                      <span className={getMAComparisonClass(stock.price, stock.ma200Daily)}>
+                      <div className={`flex items-center justify-end ${getMAComparisonClass(stock.price, stock.ma200Daily)}`}>
                         ${stock.ma200Daily.toFixed(2)}
-                      </span>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
