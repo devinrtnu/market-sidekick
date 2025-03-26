@@ -1,64 +1,164 @@
-import Image from "next/image";
-import Link from "next/link";
+import { DashboardHeader } from '@/components/dashboard/header'
+import { IndicatorCard, IndicatorProps } from '@/components/dashboard/indicator-card'
+import { MarketPriceCard, MarketPriceProps } from '@/components/dashboard/market-price-card'
+import { ChartComponent } from '@/components/dashboard/chart-component'
+import { Separator } from '@/components/ui/separator'
 
+// This is a Server Component - no 'use client' directive needed
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em] mb-2">
-            Save and see your changes instantly.
-          </li>
-          <li className="tracking-[-.01em]">
-            Explore our{" "}
-            <Link href="/examples" className="text-blue-600 dark:text-blue-400 hover:underline">
-              example implementations
-            </Link>{" "}
-            to see the foundation&apos;s features.
-          </li>
-        </ol>
+  // Market prices data - would be fetched from an API
+  const marketPrices: MarketPriceProps[] = [
+    {
+      id: 'sp500',
+      name: 'S&P 500',
+      price: '4,783.45',
+      change: '+0.32%',
+      trend: 'up'
+    },
+    {
+      id: 'bonds',
+      name: '10Y Treasury',
+      price: '3.95%',
+      change: '-0.05%',
+      trend: 'down'
+    },
+    {
+      id: 'gold',
+      name: 'Gold',
+      price: '$2,052.30',
+      change: '+0.45%',
+      trend: 'up'
+    },
+    {
+      id: 'silver',
+      name: 'Silver',
+      price: '$23.15',
+      change: '+0.28%',
+      trend: 'up'
+    }
+  ]
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Key market indicators with AI explanations
+  const indicators: IndicatorProps[] = [
+    {
+      id: 'yield-curve',
+      name: 'Yield Curve',
+      value: '-0.45%',
+      status: 'warning',
+      change: '-0.05%',
+      explanation: [
+        "Think of the yield curve like a line that shows interest rates for different loan lengths.",
+        "When shorter loans have higher rates than longer ones, the curve is \"inverted\" (negative).",
+        "An inverted curve often warns us about possible economic troubles in the next year or two.",
+        "Right now, the curve is telling us to be careful about the economy."
+      ]
+    },
+    {
+      id: 'vix',
+      name: 'VIX (Fear Index)',
+      value: '14.23',
+      status: 'normal',
+      change: '-0.8',
+      explanation: [
+        "The VIX is like a fear thermometer for the stock market.",
+        "When it's low (below 20), investors are generally calm and confident.",
+        "When it's high (above 30), investors are worried and expecting big market moves.",
+        "Current levels show investors are pretty relaxed right now."
+      ]
+    },
+    {
+      id: 'put-call',
+      name: 'PUT/CALL Ratio',
+      value: '0.85',
+      status: 'normal',
+      change: '+0.03',
+      explanation: [
+        "The PUT/CALL ratio shows if investors are buying more insurance (puts) or betting on growth (calls).",
+        "A ratio above 1.0 means more people are being cautious and buying protection.",
+        "A ratio below 0.7 means investors might be too optimistic.",
+        "The current level shows a healthy balance between caution and optimism."
+      ]
+    },
+    {
+      id: 'cape',
+      name: 'CAPE Ratio',
+      value: '32.4',
+      status: 'warning',
+      change: '+0.2',
+      explanation: [
+        "The CAPE ratio helps us see if stocks are expensive or cheap compared to their history.",
+        "It looks at company earnings over 10 years to smooth out short-term changes.",
+        "The long-term average is around 17, so today's level is quite high.",
+        "This suggests stocks might be somewhat expensive right now."
+      ]
+    },
+    {
+      id: 'credit-spreads',
+      name: 'Credit Spreads',
+      value: '3.85%',
+      status: 'normal',
+      change: '+0.12%',
+      explanation: [
+        "Credit spreads show how much extra interest risky companies pay compared to safe ones.",
+        "Wider spreads (higher numbers) mean lenders are worried about getting paid back.",
+        "Narrow spreads (lower numbers) mean lenders feel confident about lending.",
+        "Current spreads suggest normal lending conditions in the market."
+      ]
+    },
+    {
+      id: 'fed-rate',
+      name: 'Fed Funds Rate',
+      value: '5.50%',
+      status: 'warning',
+      change: '0.00%',
+      explanation: [
+        "The Fed Funds Rate is like the basic interest rate that influences all other rates.",
+        "When it's high, borrowing money becomes more expensive for everyone.",
+        "The Fed raises rates to slow down the economy and control prices.",
+        "The current high rate shows the Fed is still fighting to keep prices stable."
+      ]
+    }
+  ]
+
+  return (
+    <div className="flex-1 space-y-8 p-8 pt-6">
+      <div className="container mx-auto">
+        <DashboardHeader title="Market Dashboard" />
+        
+        {/* Market Prices Section */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          {marketPrices.map(price => (
+            <MarketPriceCard key={price.id} price={price} />
+          ))}
         </div>
-      </main>
+
+        <Separator className="my-8" />
+        
+        {/* Market Indicators Section */}
+        <h2 className="text-xl font-semibold mb-4">Key Market Indicators</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {indicators.map(indicator => (
+            <IndicatorCard key={indicator.id} indicator={indicator} />
+          ))}
+        </div>
+        
+        <Separator className="my-8" />
+        
+        {/* Charts Section */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4">Market Trends</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartComponent 
+              title="Yield Curve vs Fed Funds Rate" 
+              description="10Y-2Y spread and Federal Funds Rate"
+            />
+            <ChartComponent 
+              title="Market Sentiment" 
+              description="VIX and PUT/CALL ratio trends"
+            />
+          </div>
+        </section>
+      </div>
     </div>
-  );
+  )
 }

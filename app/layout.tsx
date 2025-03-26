@@ -1,6 +1,9 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from "next/font/google";
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
+import { ThemeProvider } from '@/components/theme-provider'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,22 +17,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Spark Foundation',
-    default: 'Spark Foundation - Modern Web Application Starter',
+    template: '%s | Market Sidekick',
+    default: 'Market Sidekick - Financial Tool for Long-Term Investors',
   },
-  description: 'A modern, high-performance Next.js starter template for building scalable web applications.',
+  description: 'A financial tool for tracking market indicators and making better investment decisions.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   openGraph: {
-    title: 'Spark Foundation',
-    description: 'A modern, high-performance Next.js starter template for building scalable web applications.',
+    title: 'Market Sidekick',
+    description: 'A financial tool for tracking market indicators and making better investment decisions.',
     url: '/',
-    siteName: 'Spark Foundation',
+    siteName: 'Market Sidekick',
     images: [
       {
         url: '/og.png',
         width: 1200,
         height: 630,
-        alt: 'Spark Foundation',
+        alt: 'Market Sidekick',
       },
     ],
     locale: 'en_US',
@@ -37,8 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Spark Foundation',
-    description: 'A modern, high-performance Next.js starter template for building scalable web applications.',
+    title: 'Market Sidekick',
+    description: 'A financial tool for tracking market indicators and making better investment decisions.',
     images: ['/og.png'],
   },
   robots: {
@@ -57,11 +60,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Header />
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   )

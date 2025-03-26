@@ -1,0 +1,168 @@
+# Market Sidekick - Project Intelligence
+
+This file captures key patterns, preferences, and learnings specific to the Market Sidekick project that will help ensure consistent, effective development.
+
+## Code Style & Formatting
+
+1. **TypeScript Best Practices**
+   - Use explicit types for component props
+   - Create interfaces for data structures in separate files
+   - Prefer type safety over "any" types
+   - Use Zod for runtime validation
+
+2. **Component Structure**
+   - Server Components by default (no 'use client' directive)
+   - Add 'use client' only when needed for interactivity
+   - Props interfaces defined at the top of component files
+   - Components organized by feature/domain
+
+3. **Naming Conventions**
+   - PascalCase for component files and component names
+   - camelCase for util files and function names
+   - kebab-case for CSS class names
+   - Components end with .tsx extension
+   - Util files end with .ts extension
+
+4. **CSS/Tailwind Style Patterns**
+   - Follow a mobile-first approach with responsive design
+   - Group related Tailwind classes (layout, typography, colors)
+   - Use Tailwind's built-in dark mode with `dark:` prefix
+   - Utilize Tailwind's customized theme values
+   - Always ensure components are properly contained within page containers
+   - Use `container mx-auto px-4 sm:px-6` pattern for consistent page layout
+
+## Project-Specific Patterns
+
+1. **Market Status Visual Cues**
+   - "normal" status: green colors
+   - "warning" status: yellow/amber colors
+   - "danger" status: red colors
+   - Trend "up": green colors with up arrow
+   - Trend "down": red colors with down arrow
+
+2. **Financial Data Formatting**
+   - Display percentages with % sign and appropriate color
+   - Currency values include $ sign for USD
+   - Show + sign for positive changes
+   - Keep consistent decimal precision (2 places for prices)
+
+3. **Explanation Patterns**
+   - Simple, plain language explanations
+   - Bullet point format
+   - 3-4 points per explanation
+   - Progressive complexity (basic → more detailed)
+
+4. **Component Composition**
+   - Cards for discrete information blocks
+   - Grid layouts for responsive organization
+   - Collapsible sections for detailed information
+   - Tabs for organizing related content
+
+## File Organization
+
+1. **Feature-Based Organization**
+   - `/components/dashboard/` - Dashboard components
+   - `/components/watchlist/` - Watchlist components
+   - `/components/stocks/` - Stock detail components
+   - `/components/reflection/` - Reflection tool components
+   - `/components/settings/` - Settings components
+
+2. **UI Component Reuse**
+   - UI components from shadcn stored in `/components/ui/`
+   - Common components shared across features in `/components/`
+   - Page-specific components in feature directories
+
+3. **Type Definitions**
+   - Types defined close to where they're used
+   - Shared types in dedicated files
+   - Prop interfaces defined at the top of component files
+
+## Implementation Best Practices
+
+1. **Server vs. Client Components**
+   - Pages are Server Components by default
+   - Interactive elements use Client Components
+   - Data fetching done on the server
+   - JavaScript minimized on the client side
+
+2. **Data Fetching Strategy**
+   - Mock data currently used throughout the app
+   - Plan to use Server Components for API data fetching
+   - Error handling wrapper for all API calls
+   - Data typed according to expected API responses
+
+3. **State Management**
+   - Local state for component-specific state
+   - Context API for theme and app-wide preferences
+   - URL parameters for shareable state
+   - localStorage for persisting preferences and watchlist
+
+4. **Loading States & Error Handling**
+   - Implement loading states for async operations
+   - Proper error boundaries around potential failure points
+   - User-friendly error messages
+   - Graceful degradation when services unavailable
+
+## Component Design Patterns
+
+1. **Card Patterns**
+   - Title area with optional badge
+   - Content area with primary information
+   - Footer area with additional context/actions
+   - Consistent padding and spacing
+
+2. **Form Patterns**
+   - Input labels above form fields
+   - Inline validation with error messages
+   - Clear button distinction between primary/secondary actions
+   - Form state management with React Hook Form
+
+3. **Table Patterns**
+   - Sortable columns with indicators
+   - Responsive design with horizontal scrolling on mobile
+   - Row actions accessible via buttons/menu
+   - Status indicators consistent with app's visual language
+
+4. **Chart Patterns**
+   - Clear titles and axis labels
+   - Legend for multi-series data
+   - Tooltips for detailed information
+   - Consistent color schemes for data series
+
+## Known Challenges & Solutions
+
+1. **Chart Implementation**
+   - Challenge: Implementing responsive, interactive charts
+   - Solution: Evaluating charting libraries like recharts or visx
+
+2. **Mobile Table Display**
+   - Challenge: Tables are difficult to display on mobile
+   - Solution: Implementing card views for mobile, tables for desktop
+
+3. **Data Persistence**
+   - Challenge: Storing user preferences and watchlist items
+   - Solution: Type-safe localStorage implementation with Zod
+
+4. **API Integration**
+   - Challenge: Integrating with financial data APIs
+   - Solution: Create adaptable data fetching layer with proper types
+
+## Optimization Goals
+
+1. **Performance**
+   - Minimize client-side JavaScript
+   - Implement proper data caching
+   - Optimize component rendering
+   - Use image optimization for any graphics
+
+2. **Accessibility**
+   - WCAG 2.1 AA compliance
+   - Keyboard navigation
+   - Screen reader support
+   - Sufficient color contrast
+
+3. **User Experience**
+   - Consistent loading states
+   - Predictable navigation patterns
+   - Clear error messages
+   - Responsive design across all screen sizes
