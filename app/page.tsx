@@ -55,8 +55,8 @@ export default function Home() {
         "Right now, the curve is telling us to be careful about the economy."
       ],
       sparklineData: [
-        { name: 't-5', value: -0.30 }, { name: 't-4', value: -0.35 }, { name: 't-3', value: -0.40 }, 
-        { name: 't-2', value: -0.42 }, { name: 't-1', value: -0.50 }, { name: 't0', value: -0.45 }
+        { date: 'Mar 22', value: -0.30 }, { date: 'Mar 23', value: -0.35 }, { date: 'Mar 24', value: -0.40 }, 
+        { date: 'Mar 25', value: -0.42 }, { date: 'Mar 26', value: -0.50 }, { date: 'Mar 27', value: -0.45 }
       ]
     },
     {
@@ -73,26 +73,26 @@ export default function Home() {
         "Current levels show investors are pretty relaxed right now."
       ],
       sparklineData: [
-        { name: 't-5', value: 15.5 }, { name: 't-4', value: 16.0 }, { name: 't-3', value: 15.0 }, 
-        { name: 't-2', value: 14.5 }, { name: 't-1', value: 15.03 }, { name: 't0', value: 14.23 }
+        { date: 'Mar 22', value: 15.5 }, { date: 'Mar 23', value: 16.0 }, { date: 'Mar 24', value: 15.0 }, 
+        { date: 'Mar 25', value: 14.5 }, { date: 'Mar 26', value: 15.03 }, { date: 'Mar 27', value: 14.23 }
       ]
     },
     {
       id: 'put-call',
-      name: 'PUT/CALL Ratio',
+      name: 'Put/Call Ratio',
       description: 'Equity Options Sentiment', // Added description
       value: '0.85',
       status: 'normal',
       change: '+0.03',
       explanation: [
-        "The PUT/CALL ratio shows if investors are buying more insurance (puts) or betting on growth (calls).",
+        "The Put/Call ratio shows if investors are buying more insurance (puts) or betting on growth (calls).",
         "A ratio above 1.0 means more people are being cautious and buying protection.",
         "A ratio below 0.7 means investors might be too optimistic.",
         "The current level shows a healthy balance between caution and optimism."
       ],
       sparklineData: [
-        { name: 't-5', value: 0.80 }, { name: 't-4', value: 0.82 }, { name: 't-3', value: 0.88 }, 
-        { name: 't-2', value: 0.84 }, { name: 't-1', value: 0.82 }, { name: 't0', value: 0.85 }
+        { date: 'Mar 22', value: 0.80 }, { date: 'Mar 23', value: 0.82 }, { date: 'Mar 24', value: 0.88 }, 
+        { date: 'Mar 25', value: 0.84 }, { date: 'Mar 26', value: 0.82 }, { date: 'Mar 27', value: 0.85 }
       ]
     },
     {
@@ -109,8 +109,8 @@ export default function Home() {
         "This suggests stocks might be somewhat expensive right now."
       ],
       sparklineData: [
-        { name: 't-5', value: 31.5 }, { name: 't-4', value: 31.8 }, { name: 't-3', value: 32.0 }, 
-        { name: 't-2', value: 32.5 }, { name: 't-1', value: 32.2 }, { name: 't0', value: 32.4 }
+        { date: 'Mar 22', value: 31.5 }, { date: 'Mar 23', value: 31.8 }, { date: 'Mar 24', value: 32.0 }, 
+        { date: 'Mar 25', value: 32.5 }, { date: 'Mar 26', value: 32.2 }, { date: 'Mar 27', value: 32.4 }
       ]
     },
     {
@@ -127,8 +127,8 @@ export default function Home() {
         "Current spreads suggest normal lending conditions in the market."
       ],
       sparklineData: [
-        { name: 't-5', value: 3.90 }, { name: 't-4', value: 3.88 }, { name: 't-3', value: 3.80 }, 
-        { name: 't-2', value: 3.75 }, { name: 't-1', value: 3.73 }, { name: 't0', value: 3.85 }
+        { date: 'Mar 22', value: 3.90 }, { date: 'Mar 23', value: 3.88 }, { date: 'Mar 24', value: 3.80 }, 
+        { date: 'Mar 25', value: 3.75 }, { date: 'Mar 26', value: 3.73 }, { date: 'Mar 27', value: 3.85 }
       ]
     },
     {
@@ -145,8 +145,8 @@ export default function Home() {
         "The current high rate shows the Fed is still fighting to keep prices stable."
       ],
       sparklineData: [ // Example: Rate held steady
-        { name: 't-5', value: 5.50 }, { name: 't-4', value: 5.50 }, { name: 't-3', value: 5.50 }, 
-        { name: 't-2', value: 5.50 }, { name: 't-1', value: 5.50 }, { name: 't0', value: 5.50 }
+        { date: 'Mar 22', value: 5.50 }, { date: 'Mar 23', value: 5.50 }, { date: 'Mar 24', value: 5.50 }, 
+        { date: 'Mar 25', value: 5.50 }, { date: 'Mar 26', value: 5.50 }, { date: 'Mar 27', value: 5.50 }
       ]
     }
   ]

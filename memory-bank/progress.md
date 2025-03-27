@@ -49,7 +49,7 @@ The following shadcn/ui components have been successfully installed and integrat
 
 The following custom components have been implemented and are working correctly:
 - `DashboardHeader` (`components/dashboard/header.tsx`)
-- `IndicatorCard` (`components/dashboard/indicator-card.tsx`) - Restructured UI based on example: Header now contains Title/Description (left) and Badge/Ask AI button (right). Content shows Value/Change and Sparkline. Footer removed. Uses `Sheet` for "Ask AI" and `recharts` for sparkline.
+- `IndicatorCard` (`components/dashboard/indicator-card.tsx`) - Restructured UI based on example: Header now contains Title/Description (left) and Badge/Ask AI button (right). Content shows Value/Change and Sparkline. Footer removed. Uses `Sheet` for "Ask AI" and `recharts` for sparkline with interactive tooltip showing date/value.
 - `MarketPriceCard` (`components/dashboard/market-price-card.tsx`)
 - `ChartComponent` (`components/dashboard/chart-component.tsx`) - Placeholder, sparklines implemented in IndicatorCard.
 - `Header` (`components/header.tsx`)
