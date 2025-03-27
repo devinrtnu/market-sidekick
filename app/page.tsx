@@ -1,17 +1,9 @@
 import { DashboardHeader } from '@/components/dashboard/header'
 import { IndicatorCard, IndicatorProps } from '@/components/dashboard/indicator-card'
 import { MarketPriceCard, MarketPriceProps } from '@/components/dashboard/market-price-card';
-import { ChartComponent } from '@/components/dashboard/chart-component'; // Keep for now, might reuse elsewhere
 import { Separator } from '@/components/ui/separator';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+// Removed direct Table imports, now using StockTable component
+import { StockTable, StockData } from '@/components/dashboard/stock-table'; 
 
 // This is a Server Component - no 'use client' directive needed
 export default function Home() {
@@ -129,17 +121,20 @@ export default function Home() {
     }
   ]
 
-  // Mock data for Top Watchlist - replace with actual data source later
-  const topWatchlist = [
-    { ticker: 'AAPL', price: '175.20', change: '+1.5%', starred: true },
-    { ticker: 'MSFT', price: '420.10', change: '-0.2%', starred: true },
-    { ticker: 'GOOGL', price: '150.80', change: '+0.8%', starred: true },
-    { ticker: 'AMZN', price: '180.50', change: '+2.1%', starred: false }, // Example of non-starred
-    { ticker: 'TSLA', price: '170.60', change: '-1.1%', starred: true },
+  // Mock data for Top Watchlist - adapted for StockData interface
+  // Added placeholder RSI/MA values for extended view
+  // Replace with actual data source later
+  const topWatchlistData: StockData[] = [
+    // Data based on playground example, adjust as needed
+    { ticker: 'AAPL', price: 187.68, change: '+1.5%', starred: true, rsiWeekly: 58.4, rsiDaily: 52.7, ma200Weekly: 175.30, ma200Daily: 182.45 },
+    { ticker: 'MSFT', price: 425.52, change: '-0.2%', starred: true, rsiWeekly: 62.1, rsiDaily: 48.3, ma200Weekly: 390.75, ma200Daily: 415.22 },
+    { ticker: 'GOOGL', price: 152.25, change: '+0.8%', starred: true, rsiWeekly: 45.6, rsiDaily: 39.8, ma200Weekly: 147.80, ma200Daily: 150.15 },
+    { ticker: 'AMZN', price: 182.30, change: '+2.1%', starred: false, rsiWeekly: 72.3, rsiDaily: 67.9, ma200Weekly: 172.50, ma200Daily: 175.85 }, // Example non-starred
+    { ticker: 'TSLA', price: 172.63, change: '-1.1%', starred: true, rsiWeekly: 29.7, rsiDaily: 32.5, ma200Weekly: 185.40, ma200Daily: 180.20 },
   ];
 
-  // Filter for starred items (assuming 'starred' property indicates inclusion in Top Watchlist)
-  const starredWatchlist = topWatchlist.filter(item => item.starred);
+  // Filter for starred items
+  const starredWatchlist = topWatchlistData.filter(item => item.starred);
 
 
   return (
@@ -153,52 +148,28 @@ export default function Home() {
             <MarketPriceCard key={price.id} price={price} />
           ))}
         </div>
-
-        <Separator className="my-8" />
         
         {/* Market Indicators Section */}
-        <h2 className="text-xl font-semibold mb-4">Key Market Indicators</h2>
+        {/* Separator removed */}
+        <h2 className="text-xl font-semibold mb-4 mt-8">Key Market Indicators</h2> {/* Added margin-top */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {indicators.map(indicator => (
             <IndicatorCard key={indicator.id} indicator={indicator} />
           ))}
         </div>
         
-        <Separator className="my-8" />
-        
-        {/* Top Watchlist Section */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Top Watchlist</h2>
-          <div className="rounded-md border"> {/* Added border for table container */}
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">Ticker</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="text-right">Change</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {starredWatchlist.length > 0 ? (
-                  starredWatchlist.map((item) => (
-                    <TableRow key={item.ticker}>
-                      <TableCell className="font-medium">{item.ticker}</TableCell>
-                      <TableCell>{item.price}</TableCell>
-                      <TableCell className={`text-right ${item.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                        {item.change}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center">
-                      No starred items in your watchlist yet.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+        {/* Top Watchlist Section - Using StockTable component */}
+        {/* Separator removed */}
+        <section className="mt-8"> {/* Added margin-top */}
+           <h2 className="text-xl font-semibold mb-4">Top Watchlist</h2> {/* Moved heading outside */}
+           {/* Using StockTable component */}
+            <StockTable 
+             stocks={starredWatchlist} 
+             // title prop removed
+             // description prop removed
+             showExtendedMetrics={true} // Show full details as per playground
+             caption="Displaying starred stocks with weekly/daily RSI and MA200 comparison." // Optional caption
+           />
         </section>
       </div>
     </div>

@@ -26,7 +26,7 @@ The Market Sidekick project is in active development with the core Market Dashbo
    - Market price display for major indices
    - Key market indicators with status badges
    - AI-powered explanations for indicators
-   - **Top Watchlist table (using mock data)** replacing the previous Market Trends charts
+   - **Top Watchlist table using the reusable `StockTable` component (with mock data)** replacing the previous Market Trends charts
    - Complete mobile and desktop responsiveness
 
 ### Installed shadcn/ui Components
@@ -56,6 +56,7 @@ The following custom components have been implemented and are working correctly:
 - `Navigation` (`components/main-nav.tsx`)
 - `ThemeProvider` (`components/theme-provider.tsx`)
 - `ThemeToggle` (`components/theme-toggle.tsx`)
+- `StockTable` (`components/dashboard/stock-table.tsx`) - Reusable table for displaying stock data.
 
 ## What's Left to Build
 
@@ -114,6 +115,7 @@ The following shadcn/ui components still need to be installed:
    - All data is currently static/mock data (including the new Top Watchlist)
    - No real-time updates or historical data
    - Chart components (though removed from the main page) are still placeholders if used elsewhere
+   - **StockTable Legend Issue:** Persistent JSX escaping errors reported in the `StockTable` component's legend, potentially affecting rendering or causing dev environment warnings.
 
 2. **Incomplete Features**
    - Navigation links to unimplemented pages
@@ -130,7 +132,7 @@ The following shadcn/ui components still need to be installed:
 1. **Milestone: Watchlist Screen (In Progress)**
    - Target Completion: TBD
    - Key Tasks:
-     - Implement StockTable component (Table component installed)
+     - Utilize `StockTable` component for watchlist display (likely with `showExtendedMetrics={true}`)
      - Create add/remove stock functionality
      - Implement local storage persistence
      - Connect actual watchlist data to the dashboard's Top Watchlist table

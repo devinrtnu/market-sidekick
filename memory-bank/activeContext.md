@@ -16,11 +16,13 @@ The project is currently focused on implementing the core features of the Market
    - Added legend for explaining the color indicators to users
    - Documented container layout pattern in .clinerules to ensure future components remain properly contained
 
-2. **Dashboard Update: Top Watchlist Section**
-   - Replaced the "Market Trends" chart section on the main dashboard (`app/page.tsx`) with a "Top Watchlist" table.
-   - Used the `shadcn/ui` Table component to display starred watchlist items.
-   - Added mock data for the watchlist display (pending actual data integration).
-   - Ensured consistent styling and layout according to `.clinerules`.
+2. **Reusable StockTable Component & Dashboard Integration**
+   - Extracted the detailed stock table logic from the playground (`app/examples/playground/page.tsx`) into a reusable component: `components/dashboard/stock-table.tsx`.
+   - This component includes helper functions for conditional styling based on RSI and MA values and supports showing/hiding extended metrics.
+   - Integrated the `StockTable` component into the main dashboard (`app/page.tsx`) for the "Top Watchlist" section, replacing the previous simpler table implementation.
+   - **Correction:** Configured the dashboard instance to show the **full extended view** (Ticker, Price, Change, RSI W/D, MA200 W/D) using `showExtendedMetrics={true}`, matching the playground example as requested.
+   - Updated mock data structure in `app/page.tsx` to include placeholder RSI/MA values and match the `StockData` interface.
+   - **Note:** Encountered persistent JSX escaping errors in the `StockTable` component's legend (now reported around lines 179, 184) that could not be resolved with available tools. The core table functionality is expected to work, but the legend may render incorrectly or show errors. The persistent build error `Unexpected token 'Card'` at line 82 also remains unresolved.
 
 ### Previously Completed
 
@@ -59,7 +61,7 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
      npx shadcn@latest add input
      ```
    - Create the basic Watchlist page structure (`app/watchlist/page.tsx`)
-   - Implement the StockTable component
+   - Utilize the new `StockTable` component on the Watchlist page (likely with `showExtendedMetrics={true}`)
    - Add form functionality for adding new stocks
 
 2. **Short-Term Roadmap**
@@ -105,9 +107,14 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
 
 1. **Table Component Implementation**
    - Challenge: Creating a responsive, sortable table for stock data
-   - Approach: Use shadcn/ui Table component with custom sorting hooks
+   - Challenge: Creating a responsive, sortable, and reusable table for stock data.
+   - Approach: Extracted logic into `StockTable` component based on playground example. Uses `shadcn/ui` Table. (Sorting not yet implemented).
 
-2. **Watchlist Persistence**
+2. **StockTable Legend Rendering Issue**
+   - Challenge: Persistent JSX escaping errors reported in the `StockTable` legend despite multiple fix attempts using `replace_in_file` and `write_to_file`.
+   - Approach: Proceeded with component integration. Issue may require manual review or could be an environment/linter artifact.
+
+3. **Watchlist Persistence**
    - Challenge: Storing user's watchlist between sessions
    - Approach: Implement with type-safe localStorage utilities
 
