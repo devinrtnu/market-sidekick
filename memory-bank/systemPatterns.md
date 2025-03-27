@@ -127,10 +127,18 @@ market-sidekick/
    - Visual patterns for representing data trends
    - Badges and icons for quick visual recognition
 
-3. **Progressive Disclosure**
+3. **Interactive Component Feedback**
+   - Hover effects with visual elevation (`-translate-y-1`)
+   - Shadow increases on interaction (`shadow-2xl`)
+   - Border highlighting for focus states
+   - Cursor changes to indicate clickable elements (`cursor-pointer`)
+   - CSS transitions for smooth animations (`transition-all duration-300`)
+
+4. **Progressive Disclosure**
    - Show essential information first
-   - Expand/collapse patterns for additional details
-   - Collapsible sections for explanations and analysis
+   - Dialog patterns for detailed views (triggered by clicking indicator cards)
+   - Sheet patterns for explanatory content ("Ask AI" feature)
+   - Tooltip patterns for data inspection (sparkline data points)
 
 ## Component Relationships
 
@@ -141,18 +149,23 @@ graph TD
     A[app/page.tsx] --> B[DashboardHeader]
     A --> C[MarketPriceCard]
     A --> D[IndicatorCard]
-    A --> E[ChartComponent]
+    A --> E[StockTable]
     C --> C1[UI/Card]
     D --> D1[UI/Card]
     D --> D2[UI/Badge]
-    D --> D3[UI/Collapsible]
+    D --> D3[UI/Sheet]
+    D --> D4[UI/Dialog]
+    D --> D5[Recharts/AreaChart]
 ```
 
 The dashboard page integrates several key components:
 - `DashboardHeader` for page title and actions
 - `MarketPriceCard` for displaying market prices
-- `IndicatorCard` for showing market indicators with explanations
-- `ChartComponent` for visualizing market trends
+- `IndicatorCard` for showing market indicators with explanations and interactivity
+  - Uses `Sheet` for "Ask AI" explanations
+  - Uses `Dialog` for detailed indicator information
+  - Uses `AreaChart` for sparkline data visualization
+- `StockTable` for displaying stock data
 
 ### Shared Components
 
@@ -170,6 +183,32 @@ The application uses a consistent layout pattern with:
 - `Navigation` for moving between different sections of the app
 - `ThemeToggle` for switching between light and dark modes
 
+### Indicator Card Component Structure
+
+```mermaid
+graph TD
+    IndicatorCard[IndicatorCard] --> Dialog[UI/Dialog]
+    Dialog --> Card[UI/Card]
+    Card --> CardHeader[CardHeader]
+    Card --> CardContent[CardContent]
+    
+    CardHeader --> DialogTrigger[DialogTrigger]
+    CardHeader --> BadgeArea[Badge & Sheet Trigger]
+    
+    CardContent --> ValueDisplay[Value & Change]
+    CardContent --> SparklineChart[Recharts AreaChart]
+    
+    SparklineChart --> Tooltip[Custom Tooltip]
+```
+
+The IndicatorCard uses a nested component structure:
+- Wrapped in a `Dialog` for detailed information display
+- Contains a `Card` for the main content
+- `DialogTrigger` attached to title/description area
+- "Ask AI" `Sheet` triggered by button in header
+- Sparkline using `recharts` with custom tooltip
+- Event propagation managed between nested interactive elements
+
 ## State Management Patterns
 
 1. **User Preferences**
@@ -182,10 +221,12 @@ The application uses a consistent layout pattern with:
    - CRUD operations for managing watchlist entries
    - Persistence between sessions
 
-3. **UI State**
-   - Component-level state for UI interactions
-   - Collapsible sections for explanations
-   - Modal and dialog states
+3. **UI State Management**
+   - Component-level state for UI interactions (useState)
+   - Visual feedback state (hover, active, focus)
+   - Event handling patterns (onClick, onMouseEnter, onMouseLeave)
+   - Tooltip states for dynamic data visualization
+   - Dialog and Sheet open/close states
 
 ## API Integration Patterns
 
@@ -198,6 +239,27 @@ The application uses a consistent layout pattern with:
    - Server-side API routes for AI interactions
    - Streaming responses for real-time explanations
    - Caching strategies for performance optimization
+   - UI components prepared for future API integration:
+     - "Ask AI" Sheet contains placeholder for AI insights
+     - Dialog structure prepared for dynamic content
+
+## User Interaction Patterns
+
+1. **Card Interaction Pattern**
+   - Entire card area provides visual feedback on hover
+   - Title/description area acts as dialog trigger
+   - Auxiliary controls (e.g., "Ask AI" button) handle their own click events
+   - Event propagation carefully managed (e.g., `stopPropagation()`)
+
+2. **Data Visualization Interaction**
+   - Hover over sparkline reveals data point details via tooltip
+   - Custom tooltip formatting for improved readability
+   - Color coding consistently applied based on value trend
+
+3. **Information Architecture**
+   - Primary information immediately visible
+   - Secondary information available through expandable UI (Dialog, Sheet)
+   - Tertiary information revealed through interactive elements (tooltips)
 
 ## Testing Patterns
 

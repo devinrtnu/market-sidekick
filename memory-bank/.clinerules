@@ -63,9 +63,24 @@ This file captures key patterns, preferences, and learnings specific to the Mark
     *   Simple, plain language.
     *   Bullet point format (currently array of strings).
     *   3-4 points per explanation.
-    *   Use `Collapsible` for progressive disclosure.
+    *   Use `Sheet` component with "Ask AI" button for explanations.
 
-4.  **Component Composition**
+4.  **Interactive UI Patterns**
+    *   Use hover effects with visual feedback (elevation, shadow, border color).
+    *   Implement transition effects using `transition-all duration-300`.
+    *   Use React `useState` for tracking interaction states.
+    *   Manage event propagation with `stopPropagation()` for nested interactive elements.
+    *   Use cursor changes (`cursor-pointer`) to indicate interactive elements.
+
+5.  **Information Architecture**
+    *   Primary information: Always visible in component body
+    *   Secondary information: Available through expandable UI
+       * Use `Dialog` for detailed views (triggered by clicking indicator cards)
+       * Use `Sheet` for explanatory content ("Ask AI" feature)
+    *   Tertiary information: Revealed through interactive elements
+       * Use tooltips for data inspection (sparkline data points)
+
+6.  **Component Composition**
     *   Use `Card` for discrete information blocks.
     *   Use Grid layouts (`grid`, `grid-cols-*`) for responsive organization.
     *   Use `Separator` for visual division.
@@ -90,6 +105,7 @@ This file captures key patterns, preferences, and learnings specific to the Mark
 1.  **Server vs. Client Components (Next.js)**
     *   Default to Server Components for pages and data display.
     *   Use Client Components (`'use client'`) for interactivity (hooks, event handlers). Wrap client components in `Suspense` if needed.
+    *   Ensure interactive components like IndicatorCard are properly marked with 'use client' directive.
     *   Minimize client-side JavaScript bundle size.
 
 2.  **Data Fetching Strategy (Next.js)**
@@ -114,7 +130,9 @@ This file captures key patterns, preferences, and learnings specific to the Mark
 
 1.  **Card Patterns (shadcn)**
     *   Use `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`.
-    *   Consistent padding and spacing.
+    *   Apply gradient backgrounds in dark mode via `dark:bg-gradient-to-b` classes.
+    *   Implement hover effects with shadow and transform properties.
+    *   Use consistent padding and spacing.
 
 2.  **Form Patterns (shadcn & React Hook Form)**
     *   Use `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormDescription`, `FormMessage`.
@@ -130,13 +148,40 @@ This file captures key patterns, preferences, and learnings specific to the Mark
     *   Plan to evaluate libraries (recharts, visx).
     *   Ensure clear titles, labels, legends, tooltips, and consistent colors.
 
+## Data Visualization Patterns
+
+1.  **Sparkline Implementation**
+    *   Use `recharts` `AreaChart` for small inline visualizations.
+    *   Implement with `ResponsiveContainer` for flexible sizing.
+    *   Include custom tooltips for data point inspection.
+    *   Use color-coded gradients based on trend direction:
+        *   Positive: green colors (#10B981) for upward trends
+        *   Negative: red colors (#EF4444) for downward trends
+        *   Neutral: gray colors (#6B7280) for flat/unclear trends
+    *   Apply consistent stroke width (2px) and opacity settings.
+    *   Hide axes for minimal, clean appearance.
+
+## Interaction Handling Patterns
+
+1.  **Event Propagation Management**
+    *   Use `stopPropagation()` on click handlers for nested interactive elements
+    *   Example: "Ask AI" button inside a dialog-triggering card should not open the dialog when clicked
+    *   Isolate interaction areas with specific roles (e.g., title area as dialog trigger)
+    *   Use `onMouseEnter` and `onMouseLeave` for hover state management
+
+2.  **State Management for Visual Effects**
+    *   Track interaction states with `useState` hooks
+    *   Apply conditional classes using the `cn` utility from `lib/utils.ts`
+    *   Use CSS transitions for smooth animations between states
+
 ## Known Challenges & Solutions
 
-1.  **Chart Implementation:** Evaluating libraries (recharts, visx).
+1.  **Chart Implementation:** Using recharts for interactive visualizations.
 2.  **Mobile Table Display:** Horizontal scrolling is the current approach. Card views are an alternative if scrolling is insufficient.
 3.  **Data Persistence:** Using type-safe `localStorage` wrapper.
 4.  **API Integration:** Plan to create adaptable data fetching layer.
 5.  **StockTable Legend Issue:** Persistent JSX escaping errors reported in `StockTable` legend. Requires further investigation or manual fix if tools fail.
+6.  **Dialog/Sheet Content Management:** Need to create dynamic content based on indicator type.
 
 ## Optimization Goals
 

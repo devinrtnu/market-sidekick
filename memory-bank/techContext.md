@@ -74,8 +74,12 @@
 ### Data Visualization
 
 1. **recharts**
-   - Installed for creating charts.
-   - Currently used for sparkline `AreaChart` in `IndicatorCard`.
+   - Fully integrated for creating interactive charts
+   - Used for sparkline `AreaChart` in both `IndicatorCard` and `TopIndicatorCard`
+   - Implemented with tooltips for data point inspection
+   - Custom tooltip rendering for improved UX
+   - Gradient fills that adapt based on trend direction (positive/negative)
+   - Responsive container implementation for all screen sizes
 
 2. **Chart Components**
    - Placeholder `ChartComponent` exists.
@@ -83,6 +87,20 @@
      - Line charts for price history
      - Area charts for market trends
      - Comparison charts for indicators
+
+### UI Interaction
+
+1. **Dialog & Sheet Implementation**
+   - `Dialog` component used for detailed views (triggered by clicking indicator cards)
+   - `Sheet` component used for explanatory content ("Ask AI" feature)
+   - Event propagation management for nested interactive elements
+   - State management for hover effects and animations
+
+2. **Hover Effects**
+   - Implemented using React `useState` for state tracking
+   - Visual feedback through CSS transitions (`transition-all`)
+   - Multiple property animations (transform, shadow, border)
+   - Cursor changes to indicate interactivity
 
 ### API Integration
 
@@ -95,6 +113,7 @@
    - For AI-powered explanations
    - Integration with OpenAI models
    - Streaming response support
+   - Placeholder UI elements in place for future API integration
 
 ## Development Setup
 

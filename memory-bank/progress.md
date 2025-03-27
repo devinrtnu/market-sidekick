@@ -25,10 +25,10 @@ The Market Sidekick project is in active development with the core Market Dashbo
    - Dashboard layout with responsive grid
    - Market price display for major indices
    - Key market indicators with status badges
-   - AI-powered explanations for indicators (now accessible via "Ask AI" sheet)
-   - **Top Watchlist table using the reusable `StockTable` component (with mock data)** replacing the previous Market Trends charts
+   - AI-powered explanations for indicators (accessible via "Ask AI" sheet)
+   - Top Watchlist table using the reusable `StockTable` component (with mock data)
    - Complete mobile and desktop responsiveness
-   - Redundant title/description removed from Top Watchlist table
+   - Interactive indicator cards with hover effects and dialog popups for detailed information
 
 ### Installed shadcn/ui Components
 
@@ -44,30 +44,48 @@ The following shadcn/ui components have been successfully installed and integrat
 - Textarea
 - Table
 - Sheet
+- Dialog
 
 ### Functional Components
 
 The following custom components have been implemented and are working correctly:
 - `DashboardHeader` (`components/dashboard/header.tsx`)
-- `IndicatorCard` (`components/dashboard/indicator-card.tsx`) - Restructured UI based on example: Header now contains Title/Description (left) and Badge/Ask AI button (right). Content shows Value/Change and Sparkline. Footer removed. Uses `Sheet` for "Ask AI" and `recharts` for sparkline with interactive tooltip showing date/value.
+- `IndicatorCard` (`components/dashboard/indicator-card.tsx`)
+  - Restructured UI: Header with Title/Description (left) and Badge/Ask AI button (right)
+  - Card-level enhancements: hover effects with elevation, shadows, and border highlighting
+  - Dialog integration with title area as trigger
+  - Event propagation management: "Ask AI" button click doesn't trigger dialog
+  - State management: tracks hover state using React useState
+  - Interactive cursor feedback on hover
+  - Tooltips on sparkline showing date/value on hover
+- `TopIndicatorCard` (`components/dashboard/top-indicator-card.tsx`)
+  - Compact variation of indicator card
+  - Horizontal layout with title and sparkline on left, value/badge on right
+  - Responsive design with appropriate spacing
 - `MarketPriceCard` (`components/dashboard/market-price-card.tsx`)
-- `ChartComponent` (`components/dashboard/chart-component.tsx`) - Placeholder, sparklines implemented in IndicatorCard.
+- `ChartComponent` (`components/dashboard/chart-component.tsx`) - Placeholder
+- `StockTable` (`components/dashboard/stock-table.tsx`) - Reusable table for displaying stock data
 - `Header` (`components/header.tsx`)
-- `Footer` (`components/footer.tsx`)
+- `Footer` (`components/footer.tsx`) - Text centering corrected
 - `Navigation` (`components/main-nav.tsx`)
 - `ThemeProvider` (`components/theme-provider.tsx`)
 - `ThemeToggle` (`components/theme-toggle.tsx`)
-- `StockTable` (`components/dashboard/stock-table.tsx`) - Reusable table for displaying stock data.
-- `Footer` (`components/footer.tsx`) - Text centering corrected.
-- **Libraries:** `recharts` installed and used for sparklines.
+
+### Installed Libraries
+- `recharts` - Successfully integrated for sparklines in indicator cards
 
 ## What's Left to Build
 
 ### Features In Progress
 
-1. **Watchlist Screen**
+1. **Indicator Card Dialog Enhancement**
+   - Need to make dialog content dynamic based on the specific indicator
+   - Need to create proper detailed views for each indicator type
+   - Currently shows static "Hello World" content 
+
+2. **Watchlist Screen**
    - Planned but not started
-   - Will require Table component implementation
+   - Will utilize existing StockTable component
    - Need to create form for adding stocks
    - Local storage integration for persistence
 
@@ -105,7 +123,6 @@ The following custom components have been implemented and are working correctly:
 ### shadcn/ui Components Needed
 
 The following shadcn/ui components still need to be installed:
-- Dialog
 - Form
 - Input (outside of shadcn defaults)
 - Select
@@ -115,33 +132,43 @@ The following shadcn/ui components still need to be installed:
 ## Known Issues
 
 1. **Mock Data Limitations**
-   - All data is currently static/mock data (including the new Top Watchlist).
-   - No real-time updates or historical data. Sparkline mock data now covers 30 days for tooltip demonstration.
-   - Chart components (other than sparklines) are still placeholders if used elsewhere.
-   - **StockTable Legend Issue:** Persistent JSX escaping errors reported in the `StockTable` component's legend, potentially affecting rendering or causing dev environment warnings.
-   - **Theme:** Dark theme updated to navy/gradient style. Base `Card` component modified for gradient background in dark mode.
+   - All data is currently static/mock data (including the Top Watchlist)
+   - No real-time updates or historical data
+   - Chart components (other than sparklines) are still placeholders if used elsewhere
 
-2. **Incomplete Features**
+2. **Component-Specific Issues**
+   - **StockTable Legend Issue:** Persistent JSX escaping errors reported in the `StockTable` component's legend, potentially affecting rendering or causing dev environment warnings
+   - **Indicator Dialog Content:** The dialog triggered by clicking indicator cards currently shows static content ("Hello World") and needs to be made dynamic
+
+3. **Incomplete Features**
    - Navigation links to unimplemented pages
    - Top Watchlist on dashboard uses mock data and isn't linked to actual watchlist functionality
    - No state persistence between sessions (including watchlist)
 
-3. **Technical Debt**
+4. **Technical Debt**
    - Need proper type definitions for all data structures
    - Missing error handling for future API calls
    - Placeholder components need proper implementation
 
 ## Next Implementation Milestones
 
-1. **Milestone: Watchlist Screen (In Progress)**
+1. **Milestone: Indicator Card Dialog Enhancement**
+   - Target Completion: TBD
+   - Key Tasks:
+     - Make dialog content dynamic based on indicator
+     - Create detailed view templates for different indicator types
+     - Add appropriate charts and explanations for each indicator type
+
+2. **Milestone: Watchlist Screen**
    - Target Completion: TBD
    - Key Tasks:
      - Utilize `StockTable` component for watchlist display (likely with `showExtendedMetrics={true}`)
      - Create add/remove stock functionality
+     - Implement sorting and filtering capabilities
      - Implement local storage persistence
      - Connect actual watchlist data to the dashboard's Top Watchlist table
 
-2. **Milestone: Stock Detail View**
+3. **Milestone: Stock Detail View**
    - Target Completion: TBD
    - Key Tasks:
      - Create dynamic route for stock symbols
@@ -149,14 +176,14 @@ The following shadcn/ui components still need to be installed:
      - Add comprehensive metrics display
      - Create buy/sell reflection buttons
 
-3. **Milestone: Reflection Tool**
+4. **Milestone: Reflection Tool**
    - Target Completion: TBD
    - Key Tasks:
      - Create reflection form with validation
      - Implement decision storage
      - Build historical decision viewer
 
-4. **Milestone: Settings Page**
+5. **Milestone: Settings Page**
    - Target Completion: TBD
    - Key Tasks:
      - Create theme selection UI

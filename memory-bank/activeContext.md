@@ -61,6 +61,21 @@ The project is currently focused on implementing the core features of the Market
    - Added `Tooltip` component from `recharts` to the sparkline `AreaChart`.
    - Implemented a custom tooltip component (`CustomTooltip`) to display the date and value on hover.
 
+8. **Indicator Card Dialog (Initial Implementation)**
+   - Installed the `shadcn/ui` `Dialog` component using `npx shadcn@latest add dialog`.
+   - Modified `components/dashboard/indicator-card.tsx` to wrap the `Card` component within a `Dialog` and `DialogTrigger`.
+   - The dialog currently displays a static title ("Yield Curve Details") and "Hello World" content for all indicator cards.
+
+9. **Indicator Card UX Improvements**
+   - Added hover state to indicator cards with visual feedback:
+     - Card slightly elevates (`-translate-y-1`)
+     - Shadow increases (`shadow-2xl`)  
+     - Border color brightens
+   - Improved dialog trigger targeting only the title/description area
+   - Added state management using `useState` to track hover state
+   - Added `stopPropagation()` to "Ask AI" button click to prevent dialog from opening when clicking the button
+   - Cursor changes to pointer on hover over clickable title area
+
 ### Previously Completed
 
 1. **Market Dashboard Implementation**
@@ -90,10 +105,14 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
 ## Next Steps
 
 1. **Immediate Tasks**
+   - Refine Indicator Card Dialog: Make the dialog content dynamic based on the specific indicator clicked (starting with Yield Curve).
+     - Add proper title based on indicator name
+     - Create detailed content sections (charts, explanations, related metrics)
+     - Consider tabs for different types of information
    - Install remaining required shadcn/ui components for Watchlist:
      ```bash
      # npx shadcn@latest add table (Completed/Skipped)
-     npx shadcn@latest add dialog
+     # npx shadcn@latest add dialog (Completed)
      npx shadcn@latest add form
      npx shadcn@latest add input
      ```
@@ -103,7 +122,13 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
 
 2. **Short-Term Roadmap**
    - Complete Watchlist Screen implementation
+     - Create add/remove stock functionality
+     - Implement sorting and filtering
+     - Add persistence with local storage
    - Begin work on Stock Detail View
+     - Dynamic routing for individual stocks
+     - Comprehensive metrics display
+     - Historical data visualization
    - Plan the Reflection Tool interface
    - Start exploring API options for real market data
 
@@ -122,13 +147,14 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
 
 2. **Chart Implementation**
    - Current charts are placeholder components (except for IndicatorCard sparklines)
-   - Decision: `recharts` selected and implemented for sparklines. Evaluate further needs.
+   - Decision: `recharts` selected and implemented for sparklines. Will continue using for other charts.
    - Consideration: Balance between performance, flexibility, and appearance. Ensure consistency if other libraries are used elsewhere.
 
 3. **State Management**
    - Currently using local component state and planned local storage
    - Decision: Continue with this approach for now, no global state management yet
    - Consideration: May need to reassess as application complexity grows
+   - New component-level state (e.g., hover state in IndicatorCard) works well for isolated UI interactions
 
 4. **AI Explanations Source**
    - Current explanations are pre-written mock data
@@ -139,6 +165,11 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
    - Using Tailwind's responsive utilities with mobile-first approach
    - Decision: Maintain this approach throughout all new components
    - Consideration: May need custom breakpoints for data-heavy screens like Watchlist
+
+6. **UX Patterns**
+   - Decision: Use hover effects and visual feedback to indicate interactive elements
+   - Decision: Use dialogs for detailed information and sheets for explanatory content
+   - Consideration: Need to ensure consistency across all interactive components
 
 ## Technical Challenges
 
@@ -155,9 +186,15 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
    - Challenge: Storing user's watchlist between sessions
    - Approach: Implement with type-safe localStorage utilities
 
-3. **Data Visualization**
+4. **Data Visualization**
    - Challenge: Displaying financial data in meaningful charts
    - Approach: Implemented sparklines using `recharts` `AreaChart`. Research needed for other chart types.
+
+5. **Dialog/Sheet Implementation**
+   - Challenge: Managing event propagation between nested interactive elements (e.g., "Ask AI" button inside clickable card)
+   - Approach: Used `stopPropagation()` to prevent dialog from opening when clicking the "Ask AI" button
+   - Challenge: Creating dynamic content for indicator dialogs
+   - Approach: Plan to create content templates for different indicator types
 
 ## Recent Architectural Decisions
 
@@ -168,7 +205,14 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
 2. **Server vs. Client Components**
    - Decision: Use Server Components for data fetching and initial rendering
    - Rationale: Optimizes initial page load and follows Next.js App Router patterns
+   - Note: Interactive components like IndicatorCard properly marked with 'use client' directive
 
 3. **TypeScript Interface Strategy**
    - Decision: Create shared interfaces for component props and data structures
    - Rationale: Ensures type safety and consistency across the application
+   - Example: Enhanced `IndicatorProps` interface to include new features like description and sparklineData
+
+4. **Component Interaction Patterns**
+   - Decision: Use component composition with shadcn/ui components
+   - Decision: Implement local state for UI interactions (e.g., hover states)
+   - Rationale: Maintains component independence while allowing for rich interactions
