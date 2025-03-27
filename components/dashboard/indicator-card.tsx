@@ -127,7 +127,7 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 pb-2"> {/* Adjusted padding - removed top padding */}
+      <CardContent className="pt-0 pb-0"> {/* Adjusted padding - removed top padding */}
         <div className="space-y-2"> {/* Reduced spacing */}
           <div className="flex flex-col space-y-0"> {/* Reduced spacing */}
             <div className="flex items-baseline gap-2"> {/* Use baseline align */}
@@ -145,7 +145,7 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
 
           {/* Sparkline Chart */}
           {indicator.sparklineData && indicator.sparklineData.length > 1 && (
-            <div className="h-12 w-full pt-2"> {/* Adjusted height and padding */}
+            <div className="h-12 w-full pt-1"> {/* Adjusted height and padding */}
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={indicator.sparklineData}

@@ -1,45 +1,85 @@
 import { DashboardHeader } from '@/components/dashboard/header'
 import { IndicatorCard, IndicatorProps } from '@/components/dashboard/indicator-card'
-import { MarketPriceCard, MarketPriceProps } from '@/components/dashboard/market-price-card';
+// Removed MarketPriceCard import
+import { TopIndicatorCard, TopIndicatorProps } from '@/components/dashboard/top-indicator-card'; // Added TopIndicatorCard import
 import { Separator } from '@/components/ui/separator';
 // Removed direct Table imports, now using StockTable component
-import { StockTable, StockData } from '@/components/dashboard/stock-table'; 
+import { StockTable, StockData } from '@/components/dashboard/stock-table';
+
+// Updated helper function to generate sparkline data with different trends
+const generateMockSparkline = (
+  days = 7,
+  startValue = 100,
+  volatility = 0.02,
+  trend: 'up' | 'down' | 'volatile' | 'flat' = 'volatile' // Added trend parameter
+) => {
+  const data = [];
+  let currentValue = startValue;
+  const trendFactor = trend === 'up' ? 0.005 : trend === 'down' ? -0.005 : 0; // Small daily bias for trends
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    let changePercent = 0;
+    if (trend === 'flat') {
+      changePercent = (2 * volatility * Math.random() - volatility) * 0.5; // Lower volatility for flat
+    } else if (trend === 'volatile') {
+      changePercent = (2 * volatility * Math.random() - volatility) * 1.5; // Higher volatility
+    } else {
+      changePercent = trendFactor + (2 * volatility * Math.random() - volatility); // Trend bias + randomness
+    }
+    currentValue *= (1 + changePercent);
+    // Ensure value doesn't go negative for things like yields/prices
+    currentValue = Math.max(currentValue, 0);
+    data.push({ date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), value: parseFloat(currentValue.toFixed(2)) });
+  }
+  // Ensure the last point matches the actual value if it's a number
+  if (data.length > 0 && typeof startValue === 'number') {
+     // This part is tricky without knowing the *actual* final value passed to the component.
+     // For mock data, we'll just use the generated end value.
+     // A better approach with real data would fetch historical points ending today.
+  }
+  return data;
+};
 
 // This is a Server Component - no 'use client' directive needed
 export default function Home() {
-  // Market prices data - would be fetched from an API
-  const marketPrices: MarketPriceProps[] = [
+  // Top indicators data - adapted from marketPrices for TopIndicatorCard
+  const topIndicators: TopIndicatorProps[] = [
     {
-      id: 'sp500',
-      name: 'S&P 500',
-      price: '4,783.45',
-      change: '+0.32%',
-      trend: 'up'
+      title: 'S&P 500',
+      // description: 'US Large Cap Index', // Removed
+      value: 4783.45, // Numeric value
+      change: 0.32, // Numeric percentage change
+      sparklineData: generateMockSparkline(7, 4750, 0.005, 'up') // Upward trend
     },
     {
-      id: 'bonds',
-      name: '10Y Treasury',
-      price: '3.95%',
-      change: '-0.05%',
-      trend: 'down'
+      title: '10Y Treasury',
+      // description: 'US Gov Bond Yield', // Removed
+      value: '3.95%', // Keep as string if it's a yield %
+      change: -0.05, // Numeric percentage change
+      sparklineData: generateMockSparkline(7, 3.98, 0.01, 'down') // Downward trend
     },
     {
-      id: 'gold',
-      name: 'Gold',
-      price: '$2,052.30',
-      change: '+0.45%',
-      trend: 'up'
+      title: 'Gold',
+      // description: 'Spot Price (USD/oz)', // Removed
+      value: 2052.30, // Numeric value
+      change: 0.45, // Numeric percentage change
+      sparklineData: generateMockSparkline(7, 2040, 0.008, 'volatile') // Volatile trend
     },
     {
-      id: 'silver',
-      name: 'Silver',
-      price: '$23.15',
-      change: '+0.28%',
-      trend: 'up'
+      id: 'vix-top', // Use a unique ID if needed, or rely on map index
+      title: 'VIX', // Adding VIX here as requested
+      // description: 'Volatility Index', // Removed
+      value: 14.23, // Numeric value
+      change: -0.8, // Numeric percentage change (assuming -0.8% change)
+      sparklineData: generateMockSparkline(7, 14.5, 0.03, 'flat') // Flat trend
     }
-  ]
+    // Removed Silver to make space for VIX, adjust as needed
+  ];
 
-  // Key market indicators with AI explanations
+
+  // Key market indicators with AI explanations (Keep existing indicators array)
   const indicators: IndicatorProps[] = [
     {
       id: 'yield-curve',
@@ -226,14 +266,14 @@ export default function Home() {
       <div className="container mx-auto px-4 sm:px-6"> {/* Ensured container class from .clinerules */}
         <DashboardHeader /> {/* Removed title prop */}
 
-        {/* Market Prices Section */}
+        {/* Top Indicators Section - Using TopIndicatorCard */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          {marketPrices.map(price => (
-            <MarketPriceCard key={price.id} price={price} />
+          {topIndicators.map((indicator, index) => (
+            <TopIndicatorCard key={indicator.id || index} {...indicator} />
           ))}
         </div>
-        
-        {/* Market Indicators Section */}
+
+        {/* Key Market Indicators Section */}
         {/* Separator removed */}
         <h2 className="text-xl font-semibold mb-4 mt-8">Key Market Indicators</h2> {/* Added margin-top */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -252,7 +292,6 @@ export default function Home() {
              title="" // Explicitly pass empty title
              description="" // Explicitly pass empty description
              showExtendedMetrics={true} // Show full details as per playground
-             caption="Displaying starred stocks with weekly/daily RSI and MA200 comparison." // Optional caption
            />
         </section>
       </div>
