@@ -29,7 +29,8 @@ This file captures key patterns, preferences, and learnings specific to the Mark
 4.  **CSS/Tailwind Style Patterns**
     *   Follow a mobile-first approach with responsive design (`sm:`, `md:`, `lg:` prefixes).
     *   Group related Tailwind classes logically (layout, typography, colors, state). Use `@apply` sparingly if needed for complex reusable styles.
-    *   Use Tailwind's built-in dark mode with `dark:` prefix.
+    *   Use Tailwind's built-in dark mode with `dark:` prefix. Dark theme colors are defined as CSS variables in `globals.css`.
+    *   **Dark Theme Gradients:** For specific gradient effects in dark mode (e.g., Card backgrounds), apply Tailwind gradient utilities directly to components (`dark:bg-gradient-*`), referencing the `--gradient-*` CSS variables defined in `globals.css`.
     *   Utilize Tailwind's customized theme values defined in `tailwind.config.ts`.
     *   Ensure components are properly contained within page layouts using `container mx-auto px-4 sm:px-6` pattern.
     *   Use `tailwind-merge` and `clsx` (via `lib/utils.ts`) for conditional class names.

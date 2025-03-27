@@ -19,21 +19,21 @@ The Market Sidekick project is in active development with the core Market Dashbo
    - Main application layout implemented
    - Header with navigation links
    - Footer with important information
-   - Theme toggling functionality
+   - Theme toggling functionality (Dark theme now uses navy/gradient style)
 
 3. **Market Dashboard (Home Screen)**
    - Dashboard layout with responsive grid
    - Market price display for major indices
    - Key market indicators with status badges
-   - AI-powered explanations for indicators
+   - AI-powered explanations for indicators (now accessible via "Ask AI" sheet)
    - **Top Watchlist table using the reusable `StockTable` component (with mock data)** replacing the previous Market Trends charts
    - Complete mobile and desktop responsiveness
+   - Redundant title/description removed from Top Watchlist table
 
 ### Installed shadcn/ui Components
 
 The following shadcn/ui components have been successfully installed and integrated:
 - Card
-- Collapsible
 - Badge
 - Separator
 - Tabs
@@ -43,20 +43,23 @@ The following shadcn/ui components have been successfully installed and integrat
 - Avatar
 - Textarea
 - Table
+- Sheet
 
 ### Functional Components
 
 The following custom components have been implemented and are working correctly:
 - `DashboardHeader` (`components/dashboard/header.tsx`)
-- `IndicatorCard` (`components/dashboard/indicator-card.tsx`)
+- `IndicatorCard` (`components/dashboard/indicator-card.tsx`) - Restructured UI based on example: Header now contains Title/Description (left) and Badge/Ask AI button (right). Content shows Value/Change and Sparkline. Footer removed. Uses `Sheet` for "Ask AI" and `recharts` for sparkline.
 - `MarketPriceCard` (`components/dashboard/market-price-card.tsx`)
-- `ChartComponent` (`components/dashboard/chart-component.tsx`)
+- `ChartComponent` (`components/dashboard/chart-component.tsx`) - Placeholder, sparklines implemented in IndicatorCard.
 - `Header` (`components/header.tsx`)
 - `Footer` (`components/footer.tsx`)
 - `Navigation` (`components/main-nav.tsx`)
 - `ThemeProvider` (`components/theme-provider.tsx`)
 - `ThemeToggle` (`components/theme-toggle.tsx`)
 - `StockTable` (`components/dashboard/stock-table.tsx`) - Reusable table for displaying stock data.
+- `Footer` (`components/footer.tsx`) - Text centering corrected.
+- **Libraries:** `recharts` installed and used for sparklines.
 
 ## What's Left to Build
 
@@ -113,9 +116,10 @@ The following shadcn/ui components still need to be installed:
 
 1. **Mock Data Limitations**
    - All data is currently static/mock data (including the new Top Watchlist)
-   - No real-time updates or historical data
-   - Chart components (though removed from the main page) are still placeholders if used elsewhere
+   - No real-time updates or historical data (including sparklines)
+   - Chart components (other than sparklines) are still placeholders if used elsewhere
    - **StockTable Legend Issue:** Persistent JSX escaping errors reported in the `StockTable` component's legend, potentially affecting rendering or causing dev environment warnings.
+   - **Theme:** Dark theme updated to navy/gradient style. Base `Card` component modified for gradient background in dark mode.
 
 2. **Incomplete Features**
    - Navigation links to unimplemented pages

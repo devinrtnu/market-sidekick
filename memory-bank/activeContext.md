@@ -24,6 +24,37 @@ The project is currently focused on implementing the core features of the Market
    - Updated mock data structure in `app/page.tsx` to include placeholder RSI/MA values and match the `StockData` interface.
    - **Note:** Encountered persistent JSX escaping errors in the `StockTable` component's legend (now reported around lines 179, 184) that could not be resolved with available tools. The core table functionality is expected to work, but the legend may render incorrectly or show errors. The persistent build error `Unexpected token 'Card'` at line 82 also remains unresolved.
 
+3. **Dark Theme Update (Navy/Gradient)**
+   - Updated dark theme CSS variables in `app/globals.css` to use a darker, navy-inspired palette based on the playground example.
+   - Introduced new CSS variables (`--gradient-darkest`, `--gradient-darker`, etc.) for gradient color stops.
+   - Modified the base `Card` component (`components/ui/card.tsx`) to apply a gradient background (`dark:bg-gradient-to-b dark:from-[var(--gradient-darkest)] ...`) in dark mode for visual separation.
+   - Corrected text centering in the `Footer` component (`components/footer.tsx`).
+   - Removed redundant title/description from the `StockTable` instance on the dashboard (`app/page.tsx`).
+
+4. **Indicator Card Update (Ask AI Sheet)**
+   - Installed the `shadcn/ui` `Sheet` component.
+   - Modified `components/dashboard/indicator-card.tsx` to replace the `Collapsible` explanation section with a `Sheet` triggered by an "Ask AI" button.
+   - **UI Refinement:** Updated the `IndicatorCard` layout based on `/ui` suggestion:
+     - Moved status `Badge` to top-left.
+     - Added status icon (e.g., `CheckCircle`, `AlertTriangle`) to top-right.
+     - Updated "Ask AI" `Button` to include `BrainCircuit` icon and placed it within `CardContent`.
+     - Adjusted spacing and text styles for better visual hierarchy.
+   - The "Ask AI" `Sheet` still contains the explanation and placeholder for AI insights.
+
+5. **Indicator Card Sparklines**
+   - Installed `recharts` library.
+   - Updated `IndicatorProps` interface to accept optional `sparklineData`.
+   - Integrated `recharts` `AreaChart` into `IndicatorCard` to display a sparkline below the main value.
+   - Sparkline color and gradient adapt based on the indicator's `change` value (positive/negative).
+   - Added sample `sparklineData` to the mock indicators in `app/page.tsx`.
+
+6. **Indicator Card UI Restructure (Example-Based)**
+   - Added optional `description` prop to `IndicatorProps`.
+   - Restructured `CardHeader` to show Title/Description on the left and Badge/"Ask AI" button on the right.
+   - Moved the "Ask AI" `SheetTrigger` into the `CardHeader`.
+   - Adjusted component styles (font sizes, padding) and removed `CardFooter` to match the provided example layout.
+   - Updated mock data in `app/page.tsx` with `description` values.
+
 ### Previously Completed
 
 1. **Market Dashboard Implementation**
@@ -84,9 +115,9 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
    - Consideration: Need to ensure data structures in mock data match expected API responses
 
 2. **Chart Implementation**
-   - Current charts are placeholder components
-   - Decision: Evaluate charting libraries (recharts, visx, etc.) for implementation
-   - Consideration: Balance between performance, flexibility, and appearance
+   - Current charts are placeholder components (except for IndicatorCard sparklines)
+   - Decision: `recharts` selected and implemented for sparklines. Evaluate further needs.
+   - Consideration: Balance between performance, flexibility, and appearance. Ensure consistency if other libraries are used elsewhere.
 
 3. **State Management**
    - Currently using local component state and planned local storage
@@ -120,7 +151,7 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
 
 3. **Data Visualization**
    - Challenge: Displaying financial data in meaningful charts
-   - Approach: Research appropriate chart types for financial data visualization
+   - Approach: Implemented sparklines using `recharts` `AreaChart`. Research needed for other chart types.
 
 ## Recent Architectural Decisions
 

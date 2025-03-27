@@ -1,97 +1,160 @@
 'use client'
 
-import { useState } from 'react'
 import { 
-  Card, 
-  CardContent, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+  Card,
+  CardContent,
+  CardDescription, // Added for description
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from '@/components/ui/collapsible'
-import { ChevronDown, ChevronUp, Info } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Separator } from '@/components/ui/separator'
+import { BrainCircuit, MoveUpRight, MoveDownLeft, AlertTriangle, CheckCircle, Minus } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { LineChart, Line, ResponsiveContainer, AreaChart, Area, XAxis, YAxis } from 'recharts'
 
 export interface IndicatorProps {
   id: string
   name: string
+  description?: string // Added description field
   value: string
   status: 'normal' | 'warning' | 'danger' | 'good'
   change?: string
   explanation: string[]
+  sparklineData?: { name: string; value: number }[] // Added for sparkline
 }
 
 type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'warning' | 'success'
 
 export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  // Define status badge color based on status
-  const getBadgeVariant = (): BadgeVariant => {
-    switch (indicator.status) {
-      case 'normal':
-        return 'secondary'
-      case 'warning':
-        return 'warning'
-      case 'danger':
-        return 'destructive'
-      case 'good':
-        return 'success'
-      default:
-        return 'secondary'
-    }
+  // Map status to color and label (icon removed from header)
+  const statusConfig = {
+    good: { color: 'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400', label: 'Good' },
+    warning: { color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400', label: 'Warning' },
+    danger: { color: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400', label: 'Danger' },
+    normal: { color: 'bg-secondary text-secondary-foreground', label: 'Normal' },
   }
+  const currentStatus = statusConfig[indicator.status] || statusConfig.normal;
+
+  // Determine if change is positive
+  const isChangePositive = indicator.change ? indicator.change.startsWith('+') : undefined;
+  const isChangeNegative = indicator.change ? indicator.change.startsWith('-') : undefined;
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-xl">{indicator.name}</CardTitle>
-          <Badge variant={getBadgeVariant()}>{indicator.status}</Badge>
+    // Apply default border in light mode, specific gradient color in dark mode
+    <Card className="w-full transition-all duration-300 hover:shadow-lg border border-border dark:border-[var(--gradient-dark)]"> 
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2"> {/* Flex row for header */}
+        <div className="space-y-1"> {/* Left side: Title & Description */}
+          <CardTitle className="text-base font-semibold">{indicator.name}</CardTitle> {/* Adjusted size */}
+          {indicator.description && (
+            <CardDescription className="text-xs text-muted-foreground">
+              {indicator.description}
+            </CardDescription>
+          )}
+        </div>
+        <div className="flex items-center gap-2"> {/* Right side: Badge & Ask AI */}
+          <Badge variant="secondary" className={cn("text-xs px-2 py-0.5", currentStatus.color)}> {/* Adjusted badge style */}
+            {currentStatus.label}
+          </Badge>
+          {/* Sheet component moved to header */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center text-primary hover:text-primary/90 p-0 h-auto text-xs" // Adjusted size/padding
+              >
+                <BrainCircuit className="h-3 w-3 mr-1" /> {/* Adjusted icon size */}
+                Ask AI
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>{indicator.name}</SheetTitle>
+                <SheetDescription>
+                  Understanding this market indicator.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="py-4">
+                <h4 className="mb-2 text-sm font-medium text-muted-foreground">What it means:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {indicator.explanation.map((item, i) => (
+                    <li key={i} className="text-sm text-muted-foreground">{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <Separator />
+              <div className="py-4">
+                <h4 className="mb-2 text-sm font-medium text-muted-foreground">AI Insights (based on {indicator.value}):</h4>
+                <p className="text-sm text-muted-foreground italic">
+                  (AI analysis based on the current value will appear here.)
+                </p>
+                {/* Placeholder for future AI content */}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold">{indicator.value}</span>
-            {indicator.change && (
-              <span className={
-                indicator.change.startsWith('+') 
-                  ? 'text-green-500' 
-                  : indicator.change.startsWith('-') 
-                    ? 'text-red-500' 
-                    : ''
-              }>
-                {indicator.change}
-              </span>
-            )}
-          </div>
-        </div>
-      </CardContent>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <CardFooter className="p-2 pt-0 flex justify-center text-muted-foreground hover:bg-muted/50 cursor-pointer transition-colors">
-            <div className="flex items-center gap-1">
-              <Info size={14} />
-              <span className="text-sm">Explanation</span>
-              {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      <CardContent className="pt-2 pb-4"> {/* Adjusted padding */}
+        <div className="space-y-2"> {/* Reduced spacing */}
+          <div className="flex flex-col space-y-0"> {/* Reduced spacing */}
+            <div className="flex items-baseline gap-2"> {/* Use baseline align */}
+              <span className="text-2xl font-bold">{indicator.value}</span> {/* Adjusted size */}
+              {indicator.change && (
+                <span className={cn(
+                  "text-xs font-medium", // Adjusted size
+                  isChangePositive ? "text-green-600" : isChangeNegative ? "text-red-600" : "text-muted-foreground"
+                )}>
+                  {indicator.change}
+                </span>
+              )}
             </div>
-          </CardFooter>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="px-4 py-3 bg-muted/30">
-            <ul className="list-disc pl-5 space-y-1">
-              {indicator.explanation.map((item, i) => (
-                <li key={i} className="text-sm text-muted-foreground">{item}</li>
-              ))}
-            </ul>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+
+          {/* Sparkline Chart */}
+          {indicator.sparklineData && indicator.sparklineData.length > 1 && (
+            <div className="h-12 w-full pt-2"> {/* Adjusted height and padding */}
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={indicator.sparklineData}
+                  // Removed margin for tighter fit
+                  margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id={`gradient-${indicator.id}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={isChangePositive ? '#10B981' : isChangeNegative ? '#EF4444' : '#6B7280'} stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor={isChangePositive ? '#10B981' : isChangeNegative ? '#EF4444' : '#6B7280'} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke={isChangePositive ? '#10B981' : isChangeNegative ? '#EF4444' : '#6B7280'} // Green, Red, Gray
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill={`url(#gradient-${indicator.id})`}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                  {/* Hide axes for sparkline effect */}
+                  <XAxis dataKey="name" hide />
+                  <YAxis hide domain={['dataMin - (dataMax-dataMin)*0.2', 'dataMax + (dataMax-dataMin)*0.2']} /> {/* Adjusted domain slightly */}
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div> {/* Close the inner div wrapping content */}
+      </CardContent> {/* Close CardContent */}
+      {/* Removed CardFooter */}
     </Card>
   )
-} 
+}

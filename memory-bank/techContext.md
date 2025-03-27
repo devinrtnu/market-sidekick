@@ -38,7 +38,6 @@
    - Components installed individually
    - Key components in use:
      - Card
-     - Collapsible
      - Badge
      - Separator
      - Tabs
@@ -46,6 +45,9 @@
      - Button
      - Dropdown Menu
      - Avatar
+     - Textarea
+     - Table
+     - Sheet
 
 2. **Custom Components**
    - IndicatorCard
@@ -71,8 +73,13 @@
 
 ### Data Visualization
 
-1. **Chart Components**
-   - Currently placeholders but planned for:
+1. **recharts**
+   - Installed for creating charts.
+   - Currently used for sparkline `AreaChart` in `IndicatorCard`.
+
+2. **Chart Components**
+   - Placeholder `ChartComponent` exists.
+   - Future plans include:
      - Line charts for price history
      - Area charts for market trends
      - Comparison charts for indicators
@@ -186,6 +193,7 @@ The project uses several key dependencies:
 - **lucide-react**: Icon library
 - **zod**: Schema validation
 - **nuqs**: URL search param management
+- **recharts**: Charting library
 
 ### Development Dependencies
 

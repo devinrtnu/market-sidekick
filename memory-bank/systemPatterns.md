@@ -120,6 +120,7 @@ market-sidekick/
    - Mobile-first approach using Tailwind breakpoints
    - Consistent spacing and sizing scale
    - Adaptive layouts based on screen size
+   - Dark theme utilizes CSS variables for base colors (`app/globals.css`). Specific gradient effects (e.g., on Cards) are applied via Tailwind utilities (`dark:bg-gradient-*`) referencing these variables.
 
 2. **Consistent Status Indicators**
    - Color coding for indicating status (normal, warning, danger)

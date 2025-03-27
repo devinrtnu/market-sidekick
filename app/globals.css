@@ -102,8 +102,8 @@
 .dark {
   /* --- New Gradient Color Stops --- */
   --gradient-darkest: oklch(0.10 0.01 265); /* Approx gray-950 */
-  --gradient-darker: oklch(0.17 0.01 265);  /* Approx gray-900 */
-  --gradient-dark: oklch(0.27 0.01 265);   /* Approx gray-800 */
+  --gradient-darker: oklch(0.18 0.01 263.85);  /* Approx gray-900 */
+  --gradient-dark: oklch(0.26 0.0 264.34);   /* Approx gray-800 */
   --gradient-medium: oklch(0.34 0.01 265); /* Approx gray-700 */
 
   /* --- Updated Core Theme Variables --- */
