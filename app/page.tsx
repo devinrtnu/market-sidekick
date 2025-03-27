@@ -163,10 +163,10 @@ export default function Home() {
         <section className="mt-8"> {/* Added margin-top */}
            <h2 className="text-xl font-semibold mb-4">Top Watchlist</h2> {/* Moved heading outside */}
            {/* Using StockTable component */}
-            <StockTable 
-             stocks={starredWatchlist} 
-             // title prop removed
-             // description prop removed
+            <StockTable
+             stocks={starredWatchlist}
+             title="" // Explicitly pass empty title
+             description="" // Explicitly pass empty description
              showExtendedMetrics={true} // Show full details as per playground
              caption="Displaying starred stocks with weekly/daily RSI and MA200 comparison." // Optional caption
            />
