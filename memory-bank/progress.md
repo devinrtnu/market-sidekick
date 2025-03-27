@@ -115,9 +115,9 @@ The following shadcn/ui components still need to be installed:
 ## Known Issues
 
 1. **Mock Data Limitations**
-   - All data is currently static/mock data (including the new Top Watchlist)
-   - No real-time updates or historical data (including sparklines)
-   - Chart components (other than sparklines) are still placeholders if used elsewhere
+   - All data is currently static/mock data (including the new Top Watchlist).
+   - No real-time updates or historical data. Sparkline mock data now covers 30 days for tooltip demonstration.
+   - Chart components (other than sparklines) are still placeholders if used elsewhere.
    - **StockTable Legend Issue:** Persistent JSX escaping errors reported in the `StockTable` component's legend, potentially affecting rendering or causing dev environment warnings.
    - **Theme:** Dark theme updated to navy/gradient style. Base `Card` component modified for gradient background in dark mode.
 

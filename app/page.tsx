@@ -54,9 +54,18 @@ export default function Home() {
         "An inverted curve often warns us about possible economic troubles in the next year or two.",
         "Right now, the curve is telling us to be careful about the economy."
       ],
+      // Generated 30 days of mock data ending Mar 27
       sparklineData: [
-        { date: 'Mar 22', value: -0.30 }, { date: 'Mar 23', value: -0.35 }, { date: 'Mar 24', value: -0.40 }, 
-        { date: 'Mar 25', value: -0.42 }, { date: 'Mar 26', value: -0.50 }, { date: 'Mar 27', value: -0.45 }
+        { date: 'Feb 26', value: -0.28 }, { date: 'Feb 27', value: -0.29 }, { date: 'Feb 28', value: -0.31 }, 
+        { date: 'Mar 1', value: -0.30 }, { date: 'Mar 2', value: -0.32 }, { date: 'Mar 3', value: -0.33 }, 
+        { date: 'Mar 4', value: -0.35 }, { date: 'Mar 5', value: -0.34 }, { date: 'Mar 6', value: -0.36 }, 
+        { date: 'Mar 7', value: -0.37 }, { date: 'Mar 8', value: -0.39 }, { date: 'Mar 9', value: -0.38 }, 
+        { date: 'Mar 10', value: -0.40 }, { date: 'Mar 11', value: -0.41 }, { date: 'Mar 12', value: -0.43 }, 
+        { date: 'Mar 13', value: -0.42 }, { date: 'Mar 14', value: -0.44 }, { date: 'Mar 15', value: -0.45 }, 
+        { date: 'Mar 16', value: -0.47 }, { date: 'Mar 17', value: -0.46 }, { date: 'Mar 18', value: -0.48 }, 
+        { date: 'Mar 19', value: -0.49 }, { date: 'Mar 20', value: -0.51 }, { date: 'Mar 21', value: -0.50 }, 
+        { date: 'Mar 22', value: -0.48 }, { date: 'Mar 23', value: -0.47 }, { date: 'Mar 24', value: -0.46 }, 
+        { date: 'Mar 25', value: -0.44 }, { date: 'Mar 26', value: -0.46 }, { date: 'Mar 27', value: -0.45 }
       ]
     },
     {
@@ -72,9 +81,18 @@ export default function Home() {
         "When it's high (above 30), investors are worried and expecting big market moves.",
         "Current levels show investors are pretty relaxed right now."
       ],
+      // Generated 30 days of mock data ending Mar 27
       sparklineData: [
-        { date: 'Mar 22', value: 15.5 }, { date: 'Mar 23', value: 16.0 }, { date: 'Mar 24', value: 15.0 }, 
-        { date: 'Mar 25', value: 14.5 }, { date: 'Mar 26', value: 15.03 }, { date: 'Mar 27', value: 14.23 }
+        { date: 'Feb 26', value: 16.5 }, { date: 'Feb 27', value: 16.8 }, { date: 'Feb 28', value: 16.6 }, 
+        { date: 'Mar 1', value: 17.0 }, { date: 'Mar 2', value: 16.7 }, { date: 'Mar 3', value: 16.9 }, 
+        { date: 'Mar 4', value: 16.5 }, { date: 'Mar 5', value: 16.3 }, { date: 'Mar 6', value: 16.0 }, 
+        { date: 'Mar 7', value: 15.8 }, { date: 'Mar 8', value: 16.1 }, { date: 'Mar 9', value: 15.9 }, 
+        { date: 'Mar 10', value: 15.6 }, { date: 'Mar 11', value: 15.4 }, { date: 'Mar 12', value: 15.7 }, 
+        { date: 'Mar 13', value: 15.5 }, { date: 'Mar 14', value: 15.2 }, { date: 'Mar 15', value: 15.0 }, 
+        { date: 'Mar 16', value: 15.3 }, { date: 'Mar 17', value: 15.1 }, { date: 'Mar 18', value: 14.8 }, 
+        { date: 'Mar 19', value: 14.6 }, { date: 'Mar 20', value: 14.9 }, { date: 'Mar 21', value: 14.7 }, 
+        { date: 'Mar 22', value: 14.4 }, { date: 'Mar 23', value: 14.6 }, { date: 'Mar 24', value: 14.3 }, 
+        { date: 'Mar 25', value: 14.1 }, { date: 'Mar 26', value: 14.5 }, { date: 'Mar 27', value: 14.23 }
       ]
     },
     {
@@ -90,8 +108,17 @@ export default function Home() {
         "A ratio below 0.7 means investors might be too optimistic.",
         "The current level shows a healthy balance between caution and optimism."
       ],
+      // Generated 30 days of mock data ending Mar 27
       sparklineData: [
-        { date: 'Mar 22', value: 0.80 }, { date: 'Mar 23', value: 0.82 }, { date: 'Mar 24', value: 0.88 }, 
+        { date: 'Feb 26', value: 0.88 }, { date: 'Feb 27', value: 0.87 }, { date: 'Feb 28', value: 0.89 }, 
+        { date: 'Mar 1', value: 0.90 }, { date: 'Mar 2', value: 0.88 }, { date: 'Mar 3', value: 0.86 }, 
+        { date: 'Mar 4', value: 0.85 }, { date: 'Mar 5', value: 0.87 }, { date: 'Mar 6', value: 0.84 }, 
+        { date: 'Mar 7', value: 0.83 }, { date: 'Mar 8', value: 0.85 }, { date: 'Mar 9', value: 0.86 }, 
+        { date: 'Mar 10', value: 0.82 }, { date: 'Mar 11', value: 0.81 }, { date: 'Mar 12', value: 0.83 }, 
+        { date: 'Mar 13', value: 0.84 }, { date: 'Mar 14', value: 0.80 }, { date: 'Mar 15', value: 0.79 }, 
+        { date: 'Mar 16', value: 0.81 }, { date: 'Mar 17', value: 0.83 }, { date: 'Mar 18', value: 0.85 }, 
+        { date: 'Mar 19', value: 0.86 }, { date: 'Mar 20', value: 0.84 }, { date: 'Mar 21', value: 0.82 }, 
+        { date: 'Mar 22', value: 0.80 }, { date: 'Mar 23', value: 0.81 }, { date: 'Mar 24', value: 0.83 }, 
         { date: 'Mar 25', value: 0.84 }, { date: 'Mar 26', value: 0.82 }, { date: 'Mar 27', value: 0.85 }
       ]
     },
@@ -108,9 +135,18 @@ export default function Home() {
         "The long-term average is around 17, so today's level is quite high.",
         "This suggests stocks might be somewhat expensive right now."
       ],
+      // Generated 30 days of mock data ending Mar 27
       sparklineData: [
-        { date: 'Mar 22', value: 31.5 }, { date: 'Mar 23', value: 31.8 }, { date: 'Mar 24', value: 32.0 }, 
-        { date: 'Mar 25', value: 32.5 }, { date: 'Mar 26', value: 32.2 }, { date: 'Mar 27', value: 32.4 }
+        { date: 'Feb 26', value: 30.5 }, { date: 'Feb 27', value: 30.7 }, { date: 'Feb 28', value: 30.6 }, 
+        { date: 'Mar 1', value: 30.9 }, { date: 'Mar 2', value: 31.1 }, { date: 'Mar 3', value: 31.0 }, 
+        { date: 'Mar 4', value: 31.3 }, { date: 'Mar 5', value: 31.5 }, { date: 'Mar 6', value: 31.4 }, 
+        { date: 'Mar 7', value: 31.7 }, { date: 'Mar 8', value: 31.9 }, { date: 'Mar 9', value: 31.8 }, 
+        { date: 'Mar 10', value: 32.0 }, { date: 'Mar 11', value: 32.2 }, { date: 'Mar 12', value: 32.1 }, 
+        { date: 'Mar 13', value: 32.4 }, { date: 'Mar 14', value: 32.6 }, { date: 'Mar 15', value: 32.5 }, 
+        { date: 'Mar 16', value: 32.3 }, { date: 'Mar 17', value: 32.1 }, { date: 'Mar 18', value: 32.0 }, 
+        { date: 'Mar 19', value: 32.2 }, { date: 'Mar 20', value: 32.4 }, { date: 'Mar 21', value: 32.3 }, 
+        { date: 'Mar 22', value: 32.5 }, { date: 'Mar 23', value: 32.6 }, { date: 'Mar 24', value: 32.4 }, 
+        { date: 'Mar 25', value: 32.2 }, { date: 'Mar 26', value: 32.3 }, { date: 'Mar 27', value: 32.4 }
       ]
     },
     {
@@ -126,9 +162,18 @@ export default function Home() {
         "Narrow spreads (lower numbers) mean lenders feel confident about lending.",
         "Current spreads suggest normal lending conditions in the market."
       ],
+      // Generated 30 days of mock data ending Mar 27
       sparklineData: [
-        { date: 'Mar 22', value: 3.90 }, { date: 'Mar 23', value: 3.88 }, { date: 'Mar 24', value: 3.80 }, 
-        { date: 'Mar 25', value: 3.75 }, { date: 'Mar 26', value: 3.73 }, { date: 'Mar 27', value: 3.85 }
+        { date: 'Feb 26', value: 4.10 }, { date: 'Feb 27', value: 4.08 }, { date: 'Feb 28', value: 4.05 }, 
+        { date: 'Mar 1', value: 4.02 }, { date: 'Mar 2', value: 4.00 }, { date: 'Mar 3', value: 3.98 }, 
+        { date: 'Mar 4', value: 3.95 }, { date: 'Mar 5', value: 3.93 }, { date: 'Mar 6', value: 3.90 }, 
+        { date: 'Mar 7', value: 3.88 }, { date: 'Mar 8', value: 3.85 }, { date: 'Mar 9', value: 3.87 }, 
+        { date: 'Mar 10', value: 3.84 }, { date: 'Mar 11', value: 3.82 }, { date: 'Mar 12', value: 3.80 }, 
+        { date: 'Mar 13', value: 3.78 }, { date: 'Mar 14', value: 3.75 }, { date: 'Mar 15', value: 3.77 }, 
+        { date: 'Mar 16', value: 3.74 }, { date: 'Mar 17', value: 3.72 }, { date: 'Mar 18', value: 3.70 }, 
+        { date: 'Mar 19', value: 3.73 }, { date: 'Mar 20', value: 3.76 }, { date: 'Mar 21', value: 3.78 }, 
+        { date: 'Mar 22', value: 3.80 }, { date: 'Mar 23', value: 3.82 }, { date: 'Mar 24', value: 3.84 }, 
+        { date: 'Mar 25', value: 3.86 }, { date: 'Mar 26', value: 3.83 }, { date: 'Mar 27', value: 3.85 }
       ]
     },
     {
@@ -144,7 +189,16 @@ export default function Home() {
         "The Fed raises rates to slow down the economy and control prices.",
         "The current high rate shows the Fed is still fighting to keep prices stable."
       ],
-      sparklineData: [ // Example: Rate held steady
+      // Generated 30 days of mock data ending Mar 27 (Rate held steady)
+      sparklineData: [ 
+        { date: 'Feb 26', value: 5.50 }, { date: 'Feb 27', value: 5.50 }, { date: 'Feb 28', value: 5.50 }, 
+        { date: 'Mar 1', value: 5.50 }, { date: 'Mar 2', value: 5.50 }, { date: 'Mar 3', value: 5.50 }, 
+        { date: 'Mar 4', value: 5.50 }, { date: 'Mar 5', value: 5.50 }, { date: 'Mar 6', value: 5.50 }, 
+        { date: 'Mar 7', value: 5.50 }, { date: 'Mar 8', value: 5.50 }, { date: 'Mar 9', value: 5.50 }, 
+        { date: 'Mar 10', value: 5.50 }, { date: 'Mar 11', value: 5.50 }, { date: 'Mar 12', value: 5.50 }, 
+        { date: 'Mar 13', value: 5.50 }, { date: 'Mar 14', value: 5.50 }, { date: 'Mar 15', value: 5.50 }, 
+        { date: 'Mar 16', value: 5.50 }, { date: 'Mar 17', value: 5.50 }, { date: 'Mar 18', value: 5.50 }, 
+        { date: 'Mar 19', value: 5.50 }, { date: 'Mar 20', value: 5.50 }, { date: 'Mar 21', value: 5.50 }, 
         { date: 'Mar 22', value: 5.50 }, { date: 'Mar 23', value: 5.50 }, { date: 'Mar 24', value: 5.50 }, 
         { date: 'Mar 25', value: 5.50 }, { date: 'Mar 26', value: 5.50 }, { date: 'Mar 27', value: 5.50 }
       ]

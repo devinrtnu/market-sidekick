@@ -74,7 +74,7 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
   return (
     // Apply default border in light mode, specific gradient color in dark mode
     <Card className="w-full transition-all duration-300 hover:shadow-lg border border-border dark:border-[var(--gradient-dark)]"> 
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2"> {/* Flex row for header */}
+      <CardHeader className="flex flex-row items-start justify-between"> {/* Flex row for header */}
         <div className="space-y-1"> {/* Left side: Title & Description */}
           <CardTitle className="text-base font-semibold">{indicator.name}</CardTitle> {/* Adjusted size */}
           {indicator.description && (
@@ -103,17 +103,17 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
                   Understanding this market indicator.
                 </SheetDescription>
               </SheetHeader>
-              <div className="py-4">
-                <h4 className="mb-2 text-sm font-medium text-muted-foreground">What it means:</h4>
+              <div className="px-4 pb-4">
+                <h4 className="mb-2 text-sm font-medium text-foreground">What it means:</h4>
                 <ul className="list-disc pl-5 space-y-1">
                   {indicator.explanation.map((item, i) => (
-                    <li key={i} className="text-sm text-muted-foreground">{item}</li>
+                    <li key={i} className="text-sm text-muted-foreground pb-2">{item}</li>
                   ))}
                 </ul>
               </div>
               <Separator />
-              <div className="py-4">
-                <h4 className="mb-2 text-sm font-medium text-muted-foreground">AI Insights (based on {indicator.value}):</h4>
+              <div className="py-4 px-4">
+                <h4 className="mb-2 text-sm font-medium text-foreground">AI Insights (based on {indicator.value}):</h4>
                 <p className="text-sm text-muted-foreground italic">
                   (AI analysis based on the current value will appear here.)
                 </p>
@@ -127,7 +127,7 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 pb-4"> {/* Adjusted padding - removed top padding */}
+      <CardContent className="pt-0 pb-2"> {/* Adjusted padding - removed top padding */}
         <div className="space-y-2"> {/* Reduced spacing */}
           <div className="flex flex-col space-y-0"> {/* Reduced spacing */}
             <div className="flex items-baseline gap-2"> {/* Use baseline align */}

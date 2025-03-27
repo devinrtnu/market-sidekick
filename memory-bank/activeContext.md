@@ -57,7 +57,7 @@ The project is currently focused on implementing the core features of the Market
 
 7. **Indicator Card Sparkline Tooltips**
    - Updated `sparklineData` interface in `IndicatorProps` to use `date` instead of `name`.
-   - Updated mock data in `app/page.tsx` to use `date` keys and sample date strings.
+   - Updated mock data in `app/page.tsx` to use `date` keys and provide 30 days of sample data points.
    - Added `Tooltip` component from `recharts` to the sparkline `AreaChart`.
    - Implemented a custom tooltip component (`CustomTooltip`) to display the date and value on hover.
 
