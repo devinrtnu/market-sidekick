@@ -92,7 +92,7 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
                 size="sm"
                 className="flex items-center text-primary hover:text-primary/100 p-1.5 h-auto text-xs" // Adjusted size/padding
               >
-                <BrainCircuit className="h-3 w-2 mr-1" /> {/* Adjusted icon size */}
+                <BrainCircuit className="h-3 w-3" /> {/* Adjusted icon size */}
                 Ask AI
               </Button>
             </SheetTrigger>
