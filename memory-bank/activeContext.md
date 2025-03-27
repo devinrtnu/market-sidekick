@@ -16,6 +16,12 @@ The project is currently focused on implementing the core features of the Market
    - Added legend for explaining the color indicators to users
    - Documented container layout pattern in .clinerules to ensure future components remain properly contained
 
+2. **Dashboard Update: Top Watchlist Section**
+   - Replaced the "Market Trends" chart section on the main dashboard (`app/page.tsx`) with a "Top Watchlist" table.
+   - Used the `shadcn/ui` Table component to display starred watchlist items.
+   - Added mock data for the watchlist display (pending actual data integration).
+   - Ensured consistent styling and layout according to `.clinerules`.
+
 ### Previously Completed
 
 1. **Market Dashboard Implementation**
@@ -45,9 +51,9 @@ The development focus is transitioning to the **Watchlist Screen** implementatio
 ## Next Steps
 
 1. **Immediate Tasks**
-   - Install required shadcn/ui components for Watchlist:
+   - Install remaining required shadcn/ui components for Watchlist:
      ```bash
-     npx shadcn@latest add table
+     # npx shadcn@latest add table (Completed/Skipped)
      npx shadcn@latest add dialog
      npx shadcn@latest add form
      npx shadcn@latest add input

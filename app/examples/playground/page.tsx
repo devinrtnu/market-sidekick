@@ -111,7 +111,7 @@ function getMAComparisonClass(price: number, ma: number): string {
 export default function PlaygroundPage() {
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6">
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 border-gray-800">
         <CardHeader>
           <CardTitle>Stock Tracking Table</CardTitle>
           <CardDescription>
@@ -121,8 +121,8 @@ export default function PlaygroundPage() {
         <CardContent className="px-6">
           <div className="overflow-x-auto -mx-6 px-6 py-1">
             <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent border-b border-border">
+              <TableHeader className="bg-gradient-to-b from-gray-800/50 to-transparent">
+                <TableRow className="hover:bg-transparent border-b border-gray-800">
                   <TableHead className="h-11 text-xs uppercase tracking-wider font-medium text-muted-foreground">
                     Ticker
                   </TableHead>
@@ -147,10 +147,10 @@ export default function PlaygroundPage() {
                 {stocks.map((stock, index) => (
                   <TableRow 
                     key={stock.ticker} 
-                    className={`transition-colors hover:bg-muted/50 ${index % 2 === 1 ? 'bg-muted/30' : ''}`}
+                    className={`transition-colors hover:bg-gradient-to-r hover:from-gray-800/50 hover:to-gray-900/50 ${index % 2 === 1 ? 'bg-gray-800/20' : ''}`}
                   >
                     <TableCell className="p-3">
-                      <span className="px-2 py-1 rounded-md bg-muted font-medium text-foreground inline-block min-w-[65px] text-center">
+                      <span className="px-2 py-1 rounded-md bg-gradient-to-r from-gray-800 to-gray-700 font-medium text-foreground inline-block min-w-[65px] text-center border border-gray-700">
                         {stock.ticker}
                       </span>
                     </TableCell>
@@ -188,7 +188,7 @@ export default function PlaygroundPage() {
             </Table>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col items-start border-t">
+        <CardFooter className="flex flex-col items-start border-t border-gray-800 bg-gradient-to-b from-gray-800/30 to-transparent">
           <h3 className="font-medium mb-2 text-sm">Indicator Legend:</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 text-xs text-muted-foreground">
             <div className="flex items-center">

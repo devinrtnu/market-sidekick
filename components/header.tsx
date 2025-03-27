@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { BarChart4 } from 'lucide-react'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { MainNav } from '@/components/main-nav'
 
 export function Header() {
@@ -17,9 +16,8 @@ export function Header() {
         </div>
         <div className="flex items-center gap-4">
           <MainNav />
-          <ThemeToggle />
         </div>
       </div>
     </header>
   )
-} 
+}

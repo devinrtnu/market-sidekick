@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart4, LineChart, Settings, ListChecks } from 'lucide-react'
+import { BarChart4, Settings, ListChecks, ClipboardCheck } from 'lucide-react' // Removed LineChart, Added ClipboardCheck
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -14,17 +14,17 @@ const navItems = [
   { 
     name: 'Watchlist', 
     href: '/watchlist', 
-    icon: <ListChecks className="h-4 w-4" /> 
+    icon: <ListChecks className="h-4 w-4" />
   },
-  { 
-    name: 'Stocks', 
-    href: '/stocks', 
-    icon: <LineChart className="h-4 w-4" /> 
+  {
+    name: 'Reflection Tool', // Updated name
+    href: '/reflection',    // Updated href
+    icon: <ClipboardCheck className="h-4 w-4" /> // Updated icon
   },
-  { 
-    name: 'Settings', 
-    href: '/settings', 
-    icon: <Settings className="h-4 w-4" /> 
+  {
+    name: 'Profile',    // Updated name
+    href: '/profile',  // Updated href
+    icon: <Settings className="h-4 w-4" />
   },
 ]
 
@@ -50,4 +50,4 @@ export function MainNav() {
       ))}
     </nav>
   )
-} 
+}

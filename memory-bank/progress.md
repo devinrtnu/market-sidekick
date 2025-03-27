@@ -26,7 +26,7 @@ The Market Sidekick project is in active development with the core Market Dashbo
    - Market price display for major indices
    - Key market indicators with status badges
    - AI-powered explanations for indicators
-   - Placeholder chart components for visualization
+   - **Top Watchlist table (using mock data)** replacing the previous Market Trends charts
    - Complete mobile and desktop responsiveness
 
 ### Installed shadcn/ui Components
@@ -42,6 +42,7 @@ The following shadcn/ui components have been successfully installed and integrat
 - Dropdown Menu
 - Avatar
 - Textarea
+- Table
 
 ### Functional Components
 
@@ -100,7 +101,6 @@ The following custom components have been implemented and are working correctly:
 ### shadcn/ui Components Needed
 
 The following shadcn/ui components still need to be installed:
-- Table
 - Dialog
 - Form
 - Input (outside of shadcn defaults)
@@ -111,14 +111,14 @@ The following shadcn/ui components still need to be installed:
 ## Known Issues
 
 1. **Mock Data Limitations**
-   - All data is currently static/mock data
+   - All data is currently static/mock data (including the new Top Watchlist)
    - No real-time updates or historical data
-   - Chart components are placeholders without real visualization
+   - Chart components (though removed from the main page) are still placeholders if used elsewhere
 
 2. **Incomplete Features**
    - Navigation links to unimplemented pages
-   - Chart components lack real data visualization
-   - No state persistence between sessions
+   - Top Watchlist on dashboard uses mock data and isn't linked to actual watchlist functionality
+   - No state persistence between sessions (including watchlist)
 
 3. **Technical Debt**
    - Need proper type definitions for all data structures
@@ -130,10 +130,10 @@ The following shadcn/ui components still need to be installed:
 1. **Milestone: Watchlist Screen (In Progress)**
    - Target Completion: TBD
    - Key Tasks:
-     - Install Table component
-     - Implement StockTable component
+     - Implement StockTable component (Table component installed)
      - Create add/remove stock functionality
      - Implement local storage persistence
+     - Connect actual watchlist data to the dashboard's Top Watchlist table
 
 2. **Milestone: Stock Detail View**
    - Target Completion: TBD

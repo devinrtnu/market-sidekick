@@ -1,8 +1,17 @@
 import { DashboardHeader } from '@/components/dashboard/header'
 import { IndicatorCard, IndicatorProps } from '@/components/dashboard/indicator-card'
-import { MarketPriceCard, MarketPriceProps } from '@/components/dashboard/market-price-card'
-import { ChartComponent } from '@/components/dashboard/chart-component'
-import { Separator } from '@/components/ui/separator'
+import { MarketPriceCard, MarketPriceProps } from '@/components/dashboard/market-price-card';
+import { ChartComponent } from '@/components/dashboard/chart-component'; // Keep for now, might reuse elsewhere
+import { Separator } from '@/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 // This is a Server Component - no 'use client' directive needed
 export default function Home() {
@@ -120,11 +129,24 @@ export default function Home() {
     }
   ]
 
+  // Mock data for Top Watchlist - replace with actual data source later
+  const topWatchlist = [
+    { ticker: 'AAPL', price: '175.20', change: '+1.5%', starred: true },
+    { ticker: 'MSFT', price: '420.10', change: '-0.2%', starred: true },
+    { ticker: 'GOOGL', price: '150.80', change: '+0.8%', starred: true },
+    { ticker: 'AMZN', price: '180.50', change: '+2.1%', starred: false }, // Example of non-starred
+    { ticker: 'TSLA', price: '170.60', change: '-1.1%', starred: true },
+  ];
+
+  // Filter for starred items (assuming 'starred' property indicates inclusion in Top Watchlist)
+  const starredWatchlist = topWatchlist.filter(item => item.starred);
+
+
   return (
     <div className="flex-1 space-y-8 p-8 pt-6">
-      <div className="container mx-auto">
-        <DashboardHeader title="Market Dashboard" />
-        
+      <div className="container mx-auto px-4 sm:px-6"> {/* Ensured container class from .clinerules */}
+        <DashboardHeader /> {/* Removed title prop */}
+
         {/* Market Prices Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           {marketPrices.map(price => (
@@ -144,18 +166,38 @@ export default function Home() {
         
         <Separator className="my-8" />
         
-        {/* Charts Section */}
+        {/* Top Watchlist Section */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Market Trends</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartComponent 
-              title="Yield Curve vs Fed Funds Rate" 
-              description="10Y-2Y spread and Federal Funds Rate"
-            />
-            <ChartComponent 
-              title="Market Sentiment" 
-              description="VIX and PUT/CALL ratio trends"
-            />
+          <h2 className="text-xl font-semibold mb-4">Top Watchlist</h2>
+          <div className="rounded-md border"> {/* Added border for table container */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">Ticker</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead className="text-right">Change</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {starredWatchlist.length > 0 ? (
+                  starredWatchlist.map((item) => (
+                    <TableRow key={item.ticker}>
+                      <TableCell className="font-medium">{item.ticker}</TableCell>
+                      <TableCell>{item.price}</TableCell>
+                      <TableCell className={`text-right ${item.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                        {item.change}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
+                      No starred items in your watchlist yet.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
         </section>
       </div>
