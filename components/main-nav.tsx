@@ -21,11 +21,6 @@ const navItems = [
     href: '/reflection',    // Updated href
     icon: <ClipboardCheck className="h-4 w-4" /> // Updated icon
   },
-  {
-    name: 'Profile',    // Updated name
-    href: '/profile',  // Updated href
-    icon: <Settings className="h-4 w-4" />
-  },
 ]
 
 export function MainNav() {
@@ -40,8 +35,8 @@ export function MainNav() {
           className={cn(
             'flex items-center px-3 py-2 text-sm font-medium transition-colors rounded-md',
             pathname === item.href
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+              ? 'bg-primary/15 text-white'
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent/10'
           )}
         >
           {item.icon}

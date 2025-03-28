@@ -262,39 +262,34 @@ export default function Home() {
 
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6">
-      <div className="container mx-auto px-4 sm:px-6"> {/* Ensured container class from .clinerules */}
-        <DashboardHeader /> {/* Removed title prop */}
-
-        {/* Top Indicators Section - Using TopIndicatorCard */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+    <div className="container mx-auto px-4 lg:px-6 xl:px-8 2xl:px-16">
+      <div className="space-y-8 py-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {topIndicators.map((indicator, index) => (
-            <TopIndicatorCard key={indicator.id || index} {...indicator} />
+            <TopIndicatorCard key={index} {...indicator} />
           ))}
         </div>
 
-        {/* Key Market Indicators Section */}
-        {/* Separator removed */}
-        <h2 className="text-xl font-semibold mb-4 mt-8">Key Market Indicators</h2> {/* Added margin-top */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {indicators.map(indicator => (
-            <IndicatorCard key={indicator.id} indicator={indicator} />
-          ))}
+        <div>
+          <h2 className="mb-6 text-2xl font-semibold">Key Market Indicators</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {indicators.map((indicator) => (
+              <IndicatorCard key={indicator.id} indicator={indicator} />
+            ))}
+          </div>
         </div>
-        
-        {/* Top Watchlist Section - Using StockTable component */}
-        {/* Separator removed */}
-        <section className="mt-8"> {/* Added margin-top */}
-           <h2 className="text-xl font-semibold mb-4">Top Watchlist</h2> {/* Moved heading outside */}
-           {/* Using StockTable component */}
-            <StockTable
-             stocks={starredWatchlist}
-             title="" // Explicitly pass empty title
-             description="" // Explicitly pass empty description
-             showExtendedMetrics={true} // Show full details as per playground
-           />
-        </section>
+
+        <div>
+          <h2 className="mb-6 text-2xl font-semibold">Top Watchlist</h2>
+          <StockTable
+            stocks={starredWatchlist}
+            title=""
+            description=""
+            showExtendedMetrics={true}
+          />
+        </div>
       </div>
     </div>
   )
 }
+

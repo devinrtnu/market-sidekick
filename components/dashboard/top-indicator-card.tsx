@@ -1,7 +1,7 @@
 'use client'; // Mark as a Client Component
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import {
@@ -16,18 +16,16 @@ interface SparklineDataPoint {
 }
 
 export interface TopIndicatorProps {
-  id?: string; // Add optional id property back
+  id?: string;
   title: string;
-  // description?: string; // Removed description prop
   value: number | string;
   change: number; // Percentage change
   sparklineData?: SparklineDataPoint[];
 }
 
 export function TopIndicatorCard({
-  id, // Destructure id
+  id,
   title,
-  // description, // Removed description prop
   value,
   change,
   sparklineData = [],
@@ -42,29 +40,24 @@ export function TopIndicatorCard({
   const gradientId = `colorValue-${id || title.replace(/\s+/g, '-')}`;
 
   return (
-    <Card>
-      {/* Adjusted layout: flex, justify-between, items-start */}
-      {/* Reduced vertical padding from p-4 to py-2 px-4 */}
-      <CardContent className="px-4 flex items-start justify-between">
+    <Card className="h-full overflow-hidden">
+      <CardContent className="px-6 flex items-start justify-between">
         {/* Left Section: Title & Sparkline */}
-        <div className="flex flex-col"> {/* Vertical layout for title and sparkline */}
-          {/* Removed text-muted-foreground for default color */}
-          <p className="text-md font-medium">{title}</p>
-          {/* Sparkline below title */}
-          {/* Increased width from w-24 to w-32 */}
-          <div className="h-8 w-40">
+        <div className="flex flex-col w-[55%] sm:w-[60%] md:w-[65%]"> 
+          <p className="text-sm font-medium truncate">{title}</p>
+          <div className="h-8 w-[80%] sm:w-[85%] md:w-[75%] xl:w-[85%] 2xl:w-full mt-4 overflow-hidden">
             {sparklineData && sparklineData.length > 1 && (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={sparklineData}
-                  margin={{ top: 10, right: 0, left: 0, bottom: 0 }} // Adjusted margin
+                  margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                 >
                   <defs>
                     <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={sparklineColor} stopOpacity={0.4}/>
                       <stop offset="95%" stopColor={sparklineColor} stopOpacity={0}/>
                     </linearGradient>
-                </defs>
+                  </defs>
                   <Area
                     type="monotone"
                     dataKey="value"
@@ -72,20 +65,22 @@ export function TopIndicatorCard({
                     strokeWidth={2}
                     fillOpacity={1}
                     fill={`url(#${gradientId})`}
-                    isAnimationActive={false} // Optional: disable animation for performance
+                    isAnimationActive={false}
                   />
                 </AreaChart>
-            </ResponsiveContainer>
-          )}
-          </div> {/* End of sparkline container div */}
-        </div> {/* End of left section div */}
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
 
         {/* Right Section: Value & Change */}
-        <div className="text-right flex-shrink-0">
-          <p className="text-md font-medium mb-1">{typeof value === 'number' ? value.toFixed(2) : value}</p>
+        <div className="flex flex-col items-end justify-center w-[40%] sm:w-[35%] md:w-[30%]">
+          <p className="text-sm font-medium text-right">
+            {typeof value === 'number' ? value.toFixed(2) : value}
+          </p>
           <Badge
             variant="outline"
-            className={cn("text-xs font-medium", badgeColorClass)}
+            className={cn("text-xs font-medium mt-1", badgeColorClass)}
           >
             {changeText}
           </Badge>
