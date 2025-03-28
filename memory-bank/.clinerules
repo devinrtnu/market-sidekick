@@ -153,13 +153,25 @@ This file captures key patterns, preferences, and learnings specific to the Mark
 1.  **Sparkline Implementation**
     *   Use `recharts` `AreaChart` for small inline visualizations.
     *   Implement with `ResponsiveContainer` for flexible sizing.
-    *   Include custom tooltips for data point inspection.
+    *   Include custom tooltips for data point inspection using custom `CustomTooltip` component.
     *   Use color-coded gradients based on trend direction:
         *   Positive: green colors (#10B981) for upward trends
         *   Negative: red colors (#EF4444) for downward trends
         *   Neutral: gray colors (#6B7280) for flat/unclear trends
     *   Apply consistent stroke width (2px) and opacity settings.
     *   Hide axes for minimal, clean appearance.
+    *   Tooltip displays date and value on hover for detailed data inspection.
+
+2.  **Table Data Visualization**
+    *   Use color-coded cells for numeric data in `StockTable` component.
+    *   Implement conditional styling based on financial metrics (e.g., RSI, Moving Averages).
+    *   Helper functions for generating color classes (e.g., `getRSIColorClass`, `getMAComparisonClass`).
+    *   Consistent color patterns matching overall visual language:
+        *   Bullish/positive: green colors
+        *   Bearish/negative: red colors
+        *   Neutral/normal: default text colors
+    *   Include legend explaining color-coding system to users.
+    *   Support showing/hiding extended metrics (`showExtendedMetrics` prop).
 
 ## Interaction Handling Patterns
 

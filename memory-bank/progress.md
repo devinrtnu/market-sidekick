@@ -2,7 +2,7 @@
 
 ## Project Status Overview
 
-The Market Sidekick project is in active development with the core Market Dashboard feature completed. The current focus is on implementing the Watchlist screen, followed by the Stock Detail view and Reflection Tool.
+The Market Sidekick project is in active development with the core Market Dashboard feature completed. The development focus is now transitioning to the Watchlist screen implementation, which will utilize the recently created StockTable component. This will be followed by the Stock Detail view and Reflection Tool implementations.
 
 ## What Works
 

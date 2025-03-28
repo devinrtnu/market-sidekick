@@ -2,7 +2,7 @@
 
 ## Current Focus
 
-The project is currently focused on implementing the core features of the Market Sidekick application, with the **Market Dashboard** feature completed and the **Watchlist Screen** as the next priority.
+The project is currently focused on implementing the core features of the Market Sidekick application. The **Market Dashboard** feature is complete, and development is transitioning to the **Watchlist Screen** implementation, which will build upon the recently created `StockTable` component.
 
 ### Recent Implementations
 

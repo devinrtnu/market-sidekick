@@ -74,15 +74,17 @@
 ### Data Visualization
 
 1. **recharts**
-   - Fully integrated for creating interactive charts
-   - Used for sparkline `AreaChart` in both `IndicatorCard` and `TopIndicatorCard`
+   - Successfully implemented for interactive data visualization
+   - Used for sparkline `AreaChart` in `IndicatorCard` 
    - Implemented with tooltips for data point inspection
-   - Custom tooltip rendering for improved UX
-   - Gradient fills that adapt based on trend direction (positive/negative)
+   - Custom tooltip component (`CustomTooltip`) displays date and value on hover
+   - Gradient fills adapt based on trend direction (positive/negative)
    - Responsive container implementation for all screen sizes
+   - Color coding consistent with project's visual language
 
 2. **Chart Components**
-   - Placeholder `ChartComponent` exists.
+   - Placeholder `ChartComponent` exists in dashboard
+   - `StockTable` component includes visualization through color-coded cells
    - Future plans include:
      - Line charts for price history
      - Area charts for market trends

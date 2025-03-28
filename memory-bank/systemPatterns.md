@@ -150,22 +150,33 @@ graph TD
     A --> C[MarketPriceCard]
     A --> D[IndicatorCard]
     A --> E[StockTable]
+    
     C --> C1[UI/Card]
+    
     D --> D1[UI/Card]
     D --> D2[UI/Badge]
     D --> D3[UI/Sheet]
     D --> D4[UI/Dialog]
     D --> D5[Recharts/AreaChart]
+    D --> D6[CustomTooltip]
+    
+    E --> E1[UI/Table]
+    E --> E2[Helper Functions]
+    E3[Conditional Styling] --> E2
 ```
 
 The dashboard page integrates several key components:
 - `DashboardHeader` for page title and actions
 - `MarketPriceCard` for displaying market prices
 - `IndicatorCard` for showing market indicators with explanations and interactivity
-  - Uses `Sheet` for "Ask AI" explanations
-  - Uses `Dialog` for detailed indicator information
-  - Uses `AreaChart` for sparkline data visualization
+  - Uses `Sheet` for "Ask AI" explanations (triggered by button in header)
+  - Uses `Dialog` for detailed indicator information (triggered by title/description area)
+  - Uses `AreaChart` for sparkline data visualization with `CustomTooltip` for data inspection
+  - Implements hover state management for visual feedback
 - `StockTable` for displaying stock data
+  - Reusable component with conditional display options (`showExtendedMetrics`)
+  - Helper functions for conditional styling based on financial metrics
+  - Color-coded cells to visualize financial conditions
 
 ### Shared Components
 
