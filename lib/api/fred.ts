@@ -4,10 +4,11 @@ import { YieldCurveData, SparklineDataPoint } from './types';
 // Global API request throttling
 const API_REQUESTS = {
   lastRequestTime: 0,
-  minInterval: 1000, // Minimum time between requests (1 second)
+  minInterval: 2000, // Increased to 2 seconds
   queue: [] as (() => void)[],
   processing: false,
-  maxParallelRequests: 2 // Allow up to 2 parallel requests
+  maxParallelRequests: 1, // Reduced to 1 to prevent rate limiting
+  retryDelay: 5000, // 5 seconds delay for retries
 };
 
 /**
@@ -18,7 +19,6 @@ async function queueRequest<T>(fn: () => Promise<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const executeRequest = async () => {
       try {
-        // Check if we need to wait to avoid rate limiting
         const now = Date.now();
         const timeSinceLastRequest = now - API_REQUESTS.lastRequestTime;
         
@@ -28,25 +28,54 @@ async function queueRequest<T>(fn: () => Promise<T>): Promise<T> {
           await new Promise(resolve => setTimeout(resolve, waitTime));
         }
         
-        // Update last request time
         API_REQUESTS.lastRequestTime = Date.now();
         
-        // Execute the actual request
-        const result = await fn();
-        resolve(result);
+        // Add retry logic with exponential backoff
+        let retries = 0;
+        const maxRetries = 3;
+        
+        while (retries < maxRetries) {
+          try {
+            const result = await fn();
+            resolve(result);
+            return;
+          } catch (error) {
+            if (error instanceof Error && error.message.includes('429')) {
+              retries++;
+              if (retries === maxRetries) {
+                throw error;
+              }
+              const backoffDelay = API_REQUESTS.retryDelay * Math.pow(2, retries - 1);
+              console.log(`Retry ${retries} after ${backoffDelay}ms delay`);
+              await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            } else {
+              throw error;
+            }
+          }
+        }
       } catch (error) {
-        reject(error);
+        if (error instanceof Error && error.message.includes('429')) {
+          console.warn('FRED API rate limit reached. Adding longer delay to queue.');
+          API_REQUESTS.lastRequestTime = Date.now();
+          API_REQUESTS.minInterval = 120000; // 2 minutes
+          
+          setTimeout(() => {
+            API_REQUESTS.minInterval = 2000; // Reset to normal after timeout
+            console.log('FRED API rate limit backoff period ended. Resuming normal intervals.');
+          }, 300000); // 5 minutes
+          
+          reject(new Error('FRED API rate limit reached. Please try again later.'));
+        } else {
+          reject(error);
+        }
       } finally {
-        // Process next request in queue if any
         API_REQUESTS.processing = false;
         processNextRequest();
       }
     };
     
-    // Add to queue
     API_REQUESTS.queue.push(executeRequest);
     
-    // Start processing if not already processing
     if (!API_REQUESTS.processing) {
       processNextRequest();
     }
@@ -185,14 +214,23 @@ async function fetchFredSeries(seriesId: string, limit: number = 30): Promise<Fr
             responseText: errorText
           });
           
-          // Handle rate limiting specially
+          // Handle rate limiting specially with a much longer backoff
           if (response.status === 429) {
-            const retryAfter = response.headers.get('Retry-After') || '5';
-            const waitTime = parseInt(retryAfter, 10) * 1000;
-            console.log(`Rate limited. Waiting ${waitTime}ms before retry.`);
+            console.error(`FRED API rate limit for ${seriesId}: ${JSON.stringify({
+              status: response.status,
+              statusText: response.statusText,
+              responseText: errorText
+            })}`);
+            
+            // Use a much longer wait time for rate limits (2-5 minutes)
+            // This will help prevent cascading rate limit errors
+            const waitTime = Math.min(120000 + (retries * 60000), 300000); // 2-5 minutes
+            console.log(`Rate limited. Waiting ${waitTime/1000} seconds before retry.`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
             retries++;
-            continue;
+            
+            // Propagate the rate limit error to queueRequest for global handling
+            throw new Error(`429: Rate limit exceeded for ${seriesId}`);
           }
           
           throw new Error(`FRED API error: ${response.status} ${response.statusText}`);
@@ -209,11 +247,16 @@ async function fetchFredSeries(seriesId: string, limit: number = 30): Promise<Fr
         
         return data;
       } catch (error) {
+        // If this is a rate limit error, propagate it up immediately
+        if (error instanceof Error && error.message.includes('429')) {
+          throw error;
+        }
+        
         lastError = error instanceof Error ? error : new Error(String(error));
         console.error(`FRED API request failed for ${seriesId}:`, lastError.message);
         
-        // Exponential backoff
-        const waitTime = Math.pow(2, retries) * 1000;
+        // Exponential backoff for non-rate-limit errors
+        const waitTime = Math.pow(2, retries) * 2000; // 2, 4, 8 seconds
         console.log(`FRED API request failed. Retrying in ${waitTime}ms (${retries + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         
@@ -779,63 +822,74 @@ export function storeYieldCurveDataLocally(data: YieldCurveData): void {
       return;
     }
     
-    // Clone data to avoid reference issues
-    const dataToStore = JSON.parse(JSON.stringify(data));
-    
-    const storageKey = 'yield_curve_data_cache';
-    const storageData = {
-      data: dataToStore,
-      timestamp: Date.now(),
-      expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours expiry
+    // Add timestamp to track when it was cached
+    const dataWithTimestamp = {
+      ...data,
+      lastUpdated: new Date().toISOString(), // Ensure we have an ISO string for date comparison
+      cachedAt: Date.now()
     };
     
-    localStorage.setItem(storageKey, JSON.stringify(storageData));
+    // Store in local storage
+    localStorage.setItem('yieldCurveData', JSON.stringify(dataWithTimestamp));
+    
+    // Store timeframe-specific data as well
+    if (data.timeframe) {
+      localStorage.setItem(`yieldCurveData_${data.timeframe}`, JSON.stringify(dataWithTimestamp));
+    }
+    
     console.log('Stored yield curve data in local storage');
   } catch (error) {
-    console.error('Failed to store yield curve data in local storage:', error);
+    console.error('Error storing yield curve data in local storage:', error);
   }
 }
 
 /**
- * Retrieves the latest yield curve data from local storage
+ * Gets the latest yield curve data from local storage
  * This is a client-side only function and should be called from components
- * @returns The cached yield curve data or null if not available
+ * @param timeframe Optional timeframe to retrieve specific cached data
+ * @param maxAgeMs Maximum age in milliseconds before considering cache stale (default 24 hours)
  */
-export function getYieldCurveDataFromLocalStorage(): YieldCurveData | null {
+export function getYieldCurveDataFromLocalStorage(timeframe?: string, maxAgeMs: number = 24 * 60 * 60 * 1000): YieldCurveData | null {
   if (typeof window === 'undefined') return null;
   
   try {
-    const storageKey = 'yield_curve_data_cache';
-    const storedDataJson = localStorage.getItem(storageKey);
+    // Try to get timeframe-specific data first if provided
+    let storageKey = 'yieldCurveData';
+    if (timeframe) {
+      const timeframeData = localStorage.getItem(`yieldCurveData_${timeframe}`);
+      if (timeframeData) {
+        storageKey = `yieldCurveData_${timeframe}`;
+      }
+    }
     
-    if (!storedDataJson) {
+    // Get data from local storage
+    const storedData = localStorage.getItem(storageKey);
+    if (!storedData) {
       console.log('No yield curve data found in local storage');
       return null;
     }
     
-    const storedData = JSON.parse(storedDataJson);
+    // Parse the data
+    const data = JSON.parse(storedData);
     
-    // Check if data is expired
-    if (!storedData.expiresAt || storedData.expiresAt < Date.now()) {
-      console.log('Cached yield curve data is expired, removing from local storage');
-      localStorage.removeItem(storageKey);
-      return null;
+    // Check if the data is too old
+    if (data.cachedAt) {
+      const cacheAge = Date.now() - data.cachedAt;
+      if (cacheAge > maxAgeMs) {
+        console.log(`Cached yield curve data is too old (${Math.round(cacheAge / 1000 / 60)} minutes). Max age: ${Math.round(maxAgeMs / 1000 / 60)} minutes`);
+        return data; // Still return but log it's old
+      }
     }
     
-    console.log('Retrieved yield curve data from local storage', {
-      timestamp: new Date(storedData.timestamp).toISOString(),
-      expires: new Date(storedData.expiresAt).toISOString()
+    console.log('Yield curve data retrieved from local storage', {
+      source: storageKey,
+      latestDate: data.latestDataDate,
+      timeframe: data.timeframe || 'unknown'
     });
     
-    return storedData.data as YieldCurveData;
+    return data;
   } catch (error) {
-    console.error('Failed to retrieve yield curve data from local storage:', error);
-    // Try to clean up possibly corrupted data
-    try {
-      localStorage.removeItem('yield_curve_data_cache');
-    } catch (e) {
-      // Ignore cleanup errors
-    }
+    console.error('Error retrieving yield curve data from local storage:', error);
     return null;
   }
 }

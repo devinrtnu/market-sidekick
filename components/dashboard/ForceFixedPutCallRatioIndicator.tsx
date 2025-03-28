@@ -7,63 +7,6 @@ import { getPutCallRatioDescription, determinePutCallStatus } from '@/lib/utils/
 import { formatWithSign } from '@/lib/utils/indicator-utils'
 
 /**
- * Debug component to see raw response data with toggle functionality
- */
-function DebugData({ data }: { data: any }) {
-  const [isOpen, setIsOpen] = useState(false)
-  
-  if (process.env.NODE_ENV !== 'development') {
-    return null;
-  }
-  
-  return (
-    <div>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          position: 'fixed',
-          bottom: '10px',
-          right: '10px',
-          zIndex: 9999,
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: 'lime',
-          padding: '5px 10px',
-          borderRadius: '5px',
-          border: '1px solid lime',
-          cursor: 'pointer',
-          fontSize: '12px',
-          fontFamily: 'monospace'
-        }}
-      >
-        {isOpen ? 'Hide Debug Data' : 'Show Debug Data'}
-      </button>
-      
-      {isOpen && (
-        <div style={{
-          position: 'fixed',
-          bottom: '40px',
-          right: '10px',
-          zIndex: 9998,
-          background: 'rgba(0, 0, 0, 0.8)',
-          color: 'lime',
-          padding: '10px',
-          borderRadius: '5px',
-          maxWidth: '500px',
-          maxHeight: '400px',
-          overflow: 'auto',
-          fontSize: '12px',
-          fontFamily: 'monospace',
-          border: '1px solid lime'
-        }}>
-          <h4>Debug Data (PCR Fixed)</h4>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
  * Special version that always shows the correct value (1.03) and still tries to fetch data
  */
 export function ForceFixedPutCallRatioIndicator() {
@@ -85,7 +28,6 @@ export function ForceFixedPutCallRatioIndicator() {
   const [loading, setLoading] = useState(false) // Not initially loading
   const [error, setError] = useState<string | null>(null)
   const [lastFetched, setLastFetched] = useState<string>('Manual override')
-  const [debugResponseData, setDebugResponseData] = useState<any>(null)
 
   useEffect(() => {
     const isMountedRef = { current: true }
@@ -114,7 +56,6 @@ export function ForceFixedPutCallRatioIndicator() {
         } else {
           const debugData = await response.json()
           console.log('[ForceFixedPCR] Debug data:', debugData)
-          setDebugResponseData(debugData)
           
           if (isMountedRef.current && debugData && debugData.latestEntry) {
             const latestEntry = debugData.latestEntry
@@ -154,9 +95,6 @@ export function ForceFixedPutCallRatioIndicator() {
           
           if (apiResponse.ok) {
             const data: PutCallRatioData = await apiResponse.json()
-            
-            // Store for debugging
-            setDebugResponseData((prev: any) => ({ ...prev, apiData: data }))
             
             // Only update the indicator if the value is reasonable (value > 0)
             if (data.totalPutCallRatio !== null && data.totalPutCallRatio > 0) {
@@ -223,10 +161,5 @@ export function ForceFixedPutCallRatioIndicator() {
     }
   }, [])
 
-  return (
-    <>
-      <IndicatorCard indicator={indicator} />
-      {process.env.NODE_ENV === 'development' && <DebugData data={debugResponseData} />}
-    </>
-  )
+  return <IndicatorCard indicator={indicator} />
 } 

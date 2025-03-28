@@ -40,12 +40,18 @@ export interface TransformedIndicatorData {
   change: number;
   sparklineData: SparklineDataPoint[];
   status?: 'normal' | 'warning' | 'danger' | 'error';
+  tradingSymbol?: string;
 }
 
 /**
  * Interface for yield curve data from FRED API
  */
-export interface YieldCurveData extends TransformedIndicatorData {
+export interface YieldCurveData {
+  title: string;
+  value: string;
+  change: number | null;
+  sparklineData: SparklineDataPoint[];
+  status: 'normal' | 'warning' | 'danger' | 'good' | 'error';
   spread: number;
   tenYearYield: number;
   twoYearYield: number;
@@ -64,6 +70,10 @@ export interface YieldCurveData extends TransformedIndicatorData {
     followedByRecession: boolean;
     recessionStart?: string;
   };
-  lastUpdated?: string;  // ISO timestamp of when data was fetched
-  latestDataDate?: string; // The date of the most recent data point
+  lastUpdated?: string;
+  latestDataDate?: string;
+  error?: string;
+  source?: string;
+  timeframe?: string;
+  cachedAt?: number;
 }

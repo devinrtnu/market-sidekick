@@ -256,9 +256,27 @@ export default async function Home() {
     <div className="container mx-auto px-4 lg:px-6 xl:px-8 2xl:px-16">
       <div className="space-y-8 py-8">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {topIndicators.map((indicator, index) => (
-            <TopIndicatorCard key={index} {...indicator} />
-          ))}
+          {topIndicators.map((indicator, index) => {
+            // Add trading symbols based on the title
+            let tradingSymbol = "";
+            if (indicator.title === "S&P 500") {
+              tradingSymbol = "SPY";
+            } else if (indicator.title === "10Y Treasury") {
+              tradingSymbol = "US10Y";
+            } else if (indicator.title === "Gold") {
+              tradingSymbol = "GOLD";
+            } else if (indicator.title === "Bitcoin") {
+              tradingSymbol = "COINBASE:BTCUSD";
+            }
+            
+            return (
+              <TopIndicatorCard 
+                key={index} 
+                {...indicator} 
+                tradingSymbol={tradingSymbol} 
+              />
+            );
+          })}
         </div>
 
         <div>

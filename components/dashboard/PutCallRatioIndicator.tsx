@@ -6,34 +6,6 @@ import { IndicatorCard, IndicatorProps } from '@/components/dashboard/indicator-
 import { getPutCallRatioDescription } from '@/lib/utils/indicator-utils'
 import { formatWithSign } from '@/lib/utils/indicator-utils'
 
-// Debug component to see raw response data
-function DebugData({ data }: { data: any }) {
-  if (process.env.NODE_ENV !== 'development') {
-    return null;
-  }
-  
-  return (
-    <div style={{
-      position: 'fixed',
-      bottom: '10px',
-      right: '10px',
-      zIndex: 9999,
-      background: 'rgba(0, 0, 0, 0.8)',
-      color: 'lime',
-      padding: '10px',
-      borderRadius: '5px',
-      maxWidth: '500px',
-      maxHeight: '300px',
-      overflow: 'auto',
-      fontSize: '12px',
-      fontFamily: 'monospace'
-    }}>
-      <h4>Debug Data (PCR)</h4>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
-  );
-}
-
 export function PutCallRatioIndicator() {
   const [indicator, setIndicator] = useState<IndicatorProps>({
     id: 'put-call-ratio',
@@ -52,7 +24,6 @@ export function PutCallRatioIndicator() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lastFetched, setLastFetched] = useState<string>('Never')
-  const [debugResponseData, setDebugResponseData] = useState<any>(null)
 
   useEffect(() => {
     const isMountedRef = { current: true }
@@ -93,9 +64,6 @@ export function PutCallRatioIndicator() {
           console.error('[PutCallRatio] Failed to parse JSON:', e)
           throw new Error('Invalid JSON response')
         }
-        
-        // Store complete response for debugging
-        setDebugResponseData(data)
         
         // Log for debugging
         console.log('[PutCallRatio] Parsed data:', data)
@@ -184,10 +152,5 @@ export function PutCallRatioIndicator() {
     }
   }, [])
 
-  return (
-    <>
-      <IndicatorCard indicator={indicator} />
-      {process.env.NODE_ENV === 'development' && <DebugData data={debugResponseData} />}
-    </>
-  )
+  return <IndicatorCard indicator={indicator} />
 } 

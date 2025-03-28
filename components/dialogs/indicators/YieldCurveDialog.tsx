@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import { YieldCurveData } from '@/lib/api/types';
-import { fetchYieldCurveData, storeYieldCurveDataLocally, getYieldCurveDataFromLocalStorage } from '@/lib/api/fred';
+import { storeYieldCurveDataLocally, getYieldCurveDataFromLocalStorage } from '@/lib/storage/yield-curve-storage';
 
 
 interface ChartDataPoint {
@@ -42,22 +42,39 @@ export function formatChartData(sparklineData: SparklineDataPoint[]): ChartDataP
     return [];
   }
   
+  console.log("ORIGINAL SPARKLINE DATA (FIRST 3):", sparklineData.slice(0, 3));
+  
   // Direct conversion to handle special cases
   const formattedData: ChartDataPoint[] = [];
   
   // First process all the points to ensure proper mapping
   for (const point of sparklineData) {
-    // Convert from decimal to percentage for display
-    // The FRED API returns values like -0.0034 which are already in decimal format
-    // We convert to percentage for display (-0.34%)
-    const percentValue = Number((point.value * 100).toFixed(2));
+    // Ensure the value is actually a number (not a string)
+    let numericValue = typeof point.value === 'string' 
+      ? parseFloat(point.value) 
+      : point.value;
+      
+    // Ensure it's a valid number
+    if (isNaN(numericValue)) {
+      console.error('Invalid numeric value in sparkline data:', point);
+      continue;
+    }
+    
+    // Ensure the value is actually a decimal (like 0.005), not a percentage (like 0.5%)
+    // If value is too large (> 1 or < -1), assume it's already multiplied and convert back
+    if (numericValue > 1 || numericValue < -1) {
+      console.warn(`Value ${numericValue} appears to be in percentage form, converting to decimal`);
+      numericValue = numericValue / 100;
+    }
     
     formattedData.push({
       date: point.date,
-      value: percentValue,
+      value: numericValue, // Use the numeric value
       isoDate: point.isoDate
     });
   }
+  
+  console.log("PROCESSED DATA (FIRST 3):", formattedData.slice(0, 3));
   
   // Sort by ISO date if available or use formatted date with current year
   formattedData.sort((a, b) => {
@@ -82,9 +99,18 @@ export function formatChartData(sparklineData: SparklineDataPoint[]): ChartDataP
     };
   });
   
-  console.log('Final chart data points:', processedData.slice(0, 3).map(p => 
-    `${p.date} (${p.isoDate || 'no-iso'}): ${p.value.toFixed(2)}%`
+  // Log in decimal format for debugging (more clear than showing as %)
+  console.log('Final chart data points:', processedData.slice(0, 3).map((p: ChartDataPoint) => 
+    `${p.date} (${p.isoDate || 'no-iso'}): Value=${p.value} (${(p.value * 100).toFixed(2)}%)`
   ));
+  
+  // Check the range to help with debugging
+  if (processedData.length > 0) {
+    const values = processedData.map(p => p.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    console.log(`Chart data range: ${(min * 100).toFixed(2)}% to ${(max * 100).toFixed(2)}%`);
+  }
   
   return processedData;
 }
@@ -123,144 +149,158 @@ export function YieldCurveDialog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [rateLimited, setRateLimited] = useState(false);
+  const [dataSource, setDataSource] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
-  // Function to fetch data with optional force refresh
-  const fetchData = async (forceRefresh: boolean = false) => {
+  // Simplified fetchData function that prioritizes Supabase data
+  const fetchData = async (timeframe: string) => {
     try {
-      setLoading(true);
-      setError(null);
-      setRateLimited(false);
-      console.log(`Fetching yield curve data with timeframe: ${selectedTimeframe}, forceRefresh: ${forceRefresh}`);
+      setLoadingMessage(loading ? "Loading data..." : "Updating timeframe...");
       
-      // Use the API endpoint instead of direct FRED call
-      const url = `/api/indicators/yield-curve?period=${selectedTimeframe}${forceRefresh ? '&refresh=true' : ''}`;
-      
-      // Add a loading message to indicate we're checking the database
-      if (!forceRefresh) {
-        setLoadingMessage('Checking database for recent data...');
-      } else {
-        setLoadingMessage('Fetching fresh data from FRED...');
-      }
-      
-      const response = await fetch(url);
-      
-      // Update loading message after response received
-      setLoadingMessage(null);
-      
-      // Handle specific error cases
-      if (response.status === 429) {
-        console.warn('API rate limit reached. Try again in a few minutes.');
-        setRateLimited(true);
-        setError('Rate limit reached. Try again in a few minutes.');
-        
-        // Use cached data if available
-        const cachedData = getYieldCurveDataFromLocalStorage();
-        if (cachedData) {
-          setData(cachedData);
-          setLastUpdated(new Date());
+      // First, let's clear any existing cached data to ensure we get fresh data
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(`yieldCurveData_${timeframe}`);
+          localStorage.removeItem('yieldCurveData');
+          console.log('Cleared existing cached data to ensure fresh data load');
+        } catch (e) {
+          // Ignore errors from localStorage operations
         }
-        
-        return;
       }
+      
+      // Construct URL for Supabase endpoint
+      const url = `/api/indicators/yield-curve?period=${timeframe}&source=supabase&_=${Date.now()}`;
+      console.log('Fetching data from:', url);
+      
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, max-age=0'
+        }
+      });
       
       if (!response.ok) {
-        throw new Error(`API response error: ${response.status} ${response.statusText}`);
+        throw new Error(`Error fetching data: ${response.status}`);
       }
       
-      const yieldData = await response.json();
+      let yieldData = await response.json();
+      console.log('API RESPONSE RAW DATA:', JSON.stringify(yieldData));
       
-      // Check if we received data with an error status
-      if (yieldData.status === 'error') {
-        console.warn('Yield curve data returned with error status');
-        setError('Data source temporarily unavailable. Using cached data if available.');
-      } else {
-        setError(null);
-        // Store successful data in local storage for future visits
-        storeYieldCurveDataLocally(yieldData);
+      // Validate the data
+      if (!yieldData || typeof yieldData !== 'object') {
+        throw new Error('Invalid response format from API');
       }
       
-      // Log the data source info
-      console.log('Yield curve data source:', yieldData.source || 'Database');
-      
-      // Log the data dates to verify we're getting the most recent data
-      if (yieldData.sparklineData && yieldData.sparklineData.length > 0) {
-        console.log('Yield curve sparkline dates:', {
-          dataPoints: yieldData.sparklineData.length,
-          dates: yieldData.sparklineData.slice(0, 5).map((point: SparklineDataPoint) => point.date).join(', ') + '...',
-          latestDate: yieldData.sparklineData[yieldData.sparklineData.length - 1].date
-        });
-      } else {
-        console.warn('No sparkline data available in yield curve response');
+      if (!Array.isArray(yieldData.sparklineData) || yieldData.sparklineData.length === 0) {
+        throw new Error('No sparkline data in response');
       }
       
-      setData(yieldData);
+      // Ensure all numbers are properly formatted
+      const processedData = {
+        ...yieldData,
+        spread: typeof yieldData.spread === 'string' ? parseFloat(yieldData.spread) : yieldData.spread,
+        tenYearYield: typeof yieldData.tenYearYield === 'string' ? parseFloat(yieldData.tenYearYield) : yieldData.tenYearYield,
+        twoYearYield: typeof yieldData.twoYearYield === 'string' ? parseFloat(yieldData.twoYearYield) : yieldData.twoYearYield,
+        change: typeof yieldData.change === 'string' ? parseFloat(yieldData.change) : yieldData.change,
+        sparklineData: yieldData.sparklineData.map((point: SparklineDataPoint) => ({
+          ...point,
+          value: typeof point.value === 'string' ? parseFloat(point.value) : point.value
+        })),
+        timeframe,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      console.log('PROCESSED DATA FROM API:', {
+        spread: processedData.spread,
+        tenYearYield: processedData.tenYearYield,
+        twoYearYield: processedData.twoYearYield,
+        change: processedData.change,
+        sampleValues: processedData.sparklineData.slice(0, 3).map((p: SparklineDataPoint) => p.value)
+      });
+      
+      // Store the processed data in local storage for future use
+      storeYieldCurveDataLocally(processedData);
+      
+      // Update the UI
+      setData(processedData);
       setLastUpdated(new Date());
+      setDataSource('Supabase');
+      setError(null);
     } catch (err) {
       console.error('Error fetching yield curve data:', err);
       
-      // Try to use local storage data as fallback if we don't already have data
-      if (!data) {
-        const cachedData = getYieldCurveDataFromLocalStorage();
-        if (cachedData) {
-          console.log('Using cached yield curve data from local storage after fetch error');
-          setData(cachedData);
-          setError('Unable to fetch latest data. Using cached data.');
-        } else {
-          setError('Failed to load yield curve data');
-          setData(null);
-        }
+      // Use cached data as fallback
+      const cachedData = getYieldCurveDataFromLocalStorage(timeframe);
+      if (cachedData) {
+        setData(cachedData);
+        setDataSource('LocalStorage (fallback)');
+        setLastUpdated(new Date(cachedData.lastUpdated || new Date()));
+        setError('Unable to fetch latest data. Using cached data.');
       } else {
-        // Keep existing data if we have it, just show error message
-        setError('Failed to refresh data. Using previously loaded data.');
+        setError('Failed to load yield curve data and no cached data available');
       }
     } finally {
       setLoading(false);
+      setLoadingMessage(null);
     }
   };
 
-  // Check for cached data on initial load
+  // Load data whenever timeframe changes
   useEffect(() => {
-    const cachedData = getYieldCurveDataFromLocalStorage();
+    // First try to get data from local storage immediately
+    const cachedData = getYieldCurveDataFromLocalStorage(selectedTimeframe);
+    
     if (cachedData) {
-      console.log('Using cached yield curve data from local storage');
+      // Immediately display cached data
       setData(cachedData);
       setLastUpdated(new Date(cachedData.lastUpdated || new Date()));
       setLoading(false);
+      setDataSource('LocalStorage');
       
-      // Only fetch fresh data if the cached data is older than 1 hour
+      // Only fetch fresh data if cached data is older than 15 minutes
       const cachedTime = new Date(cachedData.lastUpdated || 0).getTime();
       const now = new Date().getTime();
-      const oneHourMs = 60 * 60 * 1000;
+      const fifteenMinutesMs = 15 * 60 * 1000;
       
-      if (now - cachedTime > oneHourMs) {
-        // Refresh in background if data is older than 1 hour
-        console.log('Cached data is older than 1 hour, refreshing in background');
-        fetchData(true);
-      } else {
-        console.log('Cached data is recent, no need to refresh');
+      if (now - cachedTime > fifteenMinutesMs) {
+        // Refresh in background without showing loading state
+        fetchData(selectedTimeframe);
       }
     } else {
-      // No cached data available, fetch fresh data
-      fetchData(false);
+      // No cached data, need to fetch
+      fetchData(selectedTimeframe);
     }
-  }, []);
+  }, [selectedTimeframe]);
 
   // Handle manual refresh
   const handleRefresh = () => {
-    // Only trigger refresh if not already loading
     if (!loading) {
-      setRetryCount(prev => prev + 1);
-      fetchData(true);
+      fetchData(selectedTimeframe);
     }
   };
 
-  // Fetch data when timeframe changes or on retry
-  React.useEffect(() => {
-    fetchData(true);
-  }, [selectedTimeframe, retryCount, fetchData]);
+  // One-time cleanup on mount to ensure we're working with fresh data
+  useEffect(() => {
+    // Clear local storage on first load to ensure we get fresh data
+    if (typeof window !== 'undefined') {
+      try {
+        console.log('ONE-TIME CLEANUP: Clearing all yield curve data from local storage');
+        localStorage.removeItem('app:yield_curve_data_cache');
+        
+        // Also clear any old format cached data
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('yieldCurveData') || key.includes('yield_curve'))) {
+            console.log(`Removing old cached data: ${key}`);
+            localStorage.removeItem(key);
+          }
+        }
+      } catch (e) {
+        // Ignore errors from localStorage operations
+        console.error('Error clearing local storage:', e);
+      }
+    }
+  }, []);
 
   // Loading state
   if (loading && !data) {
@@ -283,8 +323,7 @@ export function YieldCurveDialog() {
       <div className="flex flex-col items-center justify-center h-[400px] space-y-4">
         <div className="text-red-600">{error}</div>
         <p className="text-muted-foreground text-center max-w-md">
-          Unable to retrieve yield curve data from the Federal Reserve Economic Data (FRED) service. 
-          This may be due to temporary API limitations or network issues.
+          Unable to retrieve yield curve data. This may be due to temporary database issues or network problems.
         </p>
         <Button onClick={handleRefresh} variant="outline" size="sm">
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -294,14 +333,59 @@ export function YieldCurveDialog() {
     );
   }
 
+  // Debug output to verify the data we're working with
+  console.log('DATA FOR CHART:', data ? {
+    spread: data.spread,
+    tenYearYield: data.tenYearYield,
+    twoYearYield: data.twoYearYield,
+    dataPoints: data.sparklineData?.length || 0,
+    samplePoints: data.sparklineData?.slice(0, 3)
+  } : 'No data');
+
   // We have data, but possibly with warning
   const chartData = data?.sparklineData ? formatChartData(data.sparklineData) : [];
   const isNegative = data?.spread ? data.spread < 0 : false;
-  const changeDirection = data?.change ? data.change < 0 : false;
+  const changeDirection = data?.change !== undefined && data.change !== null ? data.change < 0 : false;
+  
+  // Calculate appropriate chart domain based on actual data
+  const calculateChartDomain = (): [number, number] => {
+    if (!chartData || chartData.length === 0) {
+      // Default domain if no data
+      return isNegative ? [-0.01, 0.01] : [0, 0.01];
+    }
+    
+    // Get min and max values from the data
+    const values = chartData.map(point => point.value);
+    console.log("RAW CHART VALUES:", values);
+    
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    console.log(`Min value: ${minValue} (${minValue * 100}%), Max value: ${maxValue} (${maxValue * 100}%)`);
+    
+    // Determine if we need negative values in the domain
+    const needsNegativeDomain = minValue < 0;
+    
+    // Add some padding (20%) for better visualization
+    const padding = Math.max(Math.abs(maxValue), Math.abs(minValue)) * 0.2;
+    
+    if (needsNegativeDomain) {
+      // Domain with negative and positive values
+      return [
+        Math.min(minValue - padding, -0.0001), // Ensure we always show the zero line
+        Math.max(maxValue + padding, 0.0001)   // Ensure we always show the zero line
+      ];
+    } else {
+      // Domain with only positive values
+      return [0, maxValue + padding];
+    }
+  };
+  
+  // Get the chart domain based on data
+  const chartDomain = calculateChartDomain();
   
   // Format values for display
   const formattedValue = data?.spread !== undefined ? `${(data.spread * 100).toFixed(2)}%` : 'N/A';
-  const formattedChange = data?.change !== undefined 
+  const formattedChange = data?.change !== undefined && data.change !== null
     ? `${data.change > 0 ? '+' : ''}${(data.change * 100).toFixed(2)}%` 
     : '';
   
@@ -317,6 +401,9 @@ export function YieldCurveDialog() {
               Last updated: {lastUpdated.toLocaleTimeString()}
               {data?.latestDataDate && (
                 <> • Latest data: {formatDate(data.latestDataDate)}</>
+              )}
+              {dataSource && (
+                <> • Source: <span className="font-medium">{dataSource}</span></>
               )}
             </p>
           )}
@@ -381,20 +468,6 @@ export function YieldCurveDialog() {
         </div>
       )}
       
-      {/* Rate limiting warning */}
-      {rateLimited && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-3 flex items-start space-x-3">
-          <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-amber-800 dark:text-amber-300">API Rate Limit Reached</h3>
-            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-              The FRED API is rate-limited to prevent overuse. We're showing cached data for now.
-              Please wait a few minutes before refreshing again.
-            </p>
-          </div>
-        </div>
-      )}
-      
       {/* Timeframe selector */}
       <Tabs defaultValue={selectedTimeframe} onValueChange={setSelectedTimeframe} className="w-full">
         <TabsList className="grid grid-cols-6 w-full md:w-[400px]">
@@ -433,14 +506,14 @@ export function YieldCurveDialog() {
                     }}
                   />
                   <YAxis 
-                    tickFormatter={(value) => `${value.toFixed(2)}%`}
-                    domain={isNegative ? [-0.5, 0.5] : [0, 0.5]}
+                    tickFormatter={(value) => `${(value * 100).toFixed(2)}%`}
+                    domain={chartDomain}
                     tick={{ fontSize: 12 }}
                     label={{ value: 'Spread (%)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } }}
                   />
                   <Tooltip 
-                    formatter={(value: number) => [`${value.toFixed(2)}%`, 'Yield Spread']}
-                    labelFormatter={(label) => label}
+                    formatter={(value: number) => [`${(value * 100).toFixed(2)}%`, 'Yield Spread']}
+                    labelFormatter={(label: string) => label}
                     contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: '#fff', border: 'none', borderRadius: '4px' }}
                   />
                   <Line
@@ -452,7 +525,12 @@ export function YieldCurveDialog() {
                     activeDot={{ r: 6 }}
                   />
                   {/* Add zero reference line */}
-                  <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+                  <ReferenceLine 
+                    y={0} 
+                    stroke="#666" 
+                    strokeDasharray="3 3" 
+                    label={{ value: "0%", position: "right", fill: "#666" }} 
+                  />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
