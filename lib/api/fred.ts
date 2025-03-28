@@ -1,6 +1,70 @@
 import { Cache } from './cache';
 import { YieldCurveData, SparklineDataPoint } from './types';
 
+// Global API request throttling
+const API_REQUESTS = {
+  lastRequestTime: 0,
+  minInterval: 2000, // Minimum time between requests (2 seconds)
+  queue: [] as (() => void)[],
+  processing: false
+};
+
+/**
+ * Queue API requests to prevent rate limiting
+ * @param fn Function to execute when it's safe to make a request
+ */
+async function queueRequest<T>(fn: () => Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const executeRequest = async () => {
+      try {
+        // Check if we need to wait to avoid rate limiting
+        const now = Date.now();
+        const timeSinceLastRequest = now - API_REQUESTS.lastRequestTime;
+        
+        if (timeSinceLastRequest < API_REQUESTS.minInterval) {
+          const waitTime = API_REQUESTS.minInterval - timeSinceLastRequest;
+          console.log(`Throttling API request. Waiting ${waitTime}ms before proceeding.`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+        
+        // Update last request time
+        API_REQUESTS.lastRequestTime = Date.now();
+        
+        // Execute the actual request
+        const result = await fn();
+        resolve(result);
+      } catch (error) {
+        reject(error);
+      } finally {
+        // Process next request in queue if any
+        API_REQUESTS.processing = false;
+        processNextRequest();
+      }
+    };
+    
+    // Add to queue
+    API_REQUESTS.queue.push(executeRequest);
+    
+    // Start processing if not already processing
+    if (!API_REQUESTS.processing) {
+      processNextRequest();
+    }
+  });
+}
+
+/**
+ * Process next request in the queue
+ */
+function processNextRequest() {
+  if (API_REQUESTS.queue.length === 0 || API_REQUESTS.processing) {
+    return;
+  }
+  
+  API_REQUESTS.processing = true;
+  const nextRequest = API_REQUESTS.queue.shift();
+  if (nextRequest) nextRequest();
+}
+
 // Cache instance with 15-minute expiration (15 * 60 * 1000 ms)
 const cache = new Cache(15 * 60 * 1000);
 
@@ -39,90 +103,106 @@ const US_RECESSIONS = [
  * Fetch data from FRED API for a specific series
  */
 async function fetchFredSeries(seriesId: string, limit: number = 30): Promise<FredApiResponse> {
-  const FRED_API_KEY = process.env.FRED_API_KEY;
-  if (!FRED_API_KEY) {
-    console.error('FRED_API_KEY not found in environment variables');
-    throw new Error('FRED_API_KEY not found in environment variables');
-  }
-
-  // Add current timestamp to prevent caching by the API
-  const timestamp = new Date().getTime();
+  // Wrap the actual fetch logic in the queueRequest function
+  return queueRequest(async () => {
+    // More robust environment variable handling
+    let FRED_API_KEY = process.env.FRED_API_KEY;
+    
+    // Enhanced logging for API key troubleshooting
+    const apiKeyLength = FRED_API_KEY ? FRED_API_KEY.length : 0;
+    console.log(`FRED_API_KEY found with length ${apiKeyLength}`);
+    
+    if (!FRED_API_KEY || apiKeyLength === 0) {
+      console.error('FRED_API_KEY not found in environment variables');
+      throw new Error('FRED_API_KEY not found in environment variables');
+    }
+    
+    // Cleanup API key - remove any unexpected characters
+    const cleanedApiKey = FRED_API_KEY.trim().replace(/[^a-zA-Z0-9]/g, '');
+    if (cleanedApiKey !== FRED_API_KEY) {
+      console.warn(`FRED_API_KEY contained unexpected characters. Cleaned up for use.`);
+      FRED_API_KEY = cleanedApiKey;
+    }
   
-  // Use tomorrow's date to ensure we get the latest data
-  // This is because some data may be published with a slight delay
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
-  
-  // Build the API URL with all necessary parameters
-  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=${limit}&observation_end=${tomorrowStr}&_=${timestamp}`;
-  
-  console.log(`Fetching FRED data for ${seriesId} with end date ${tomorrowStr}`);
-  
-  // Implement retry logic with exponential backoff
-  const maxRetries = 3;
-  let retries = 0;
-  let lastError: Error | null = null;
-  
-  while (retries < maxRetries) {
-    try {
-      // Update the fetch options to disable caching and ensure we get fresh data
-      const response = await fetch(url, { 
-        cache: 'no-store',
-        next: { revalidate: 0 },
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache, no-store',
-          'Pragma': 'no-cache'
-        }
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`FRED API error for ${seriesId}:`, {
-          status: response.status,
-          statusText: response.statusText,
-          responseText: errorText
+    // Add current timestamp to prevent caching by the API
+    const timestamp = new Date().getTime();
+    
+    // Use tomorrow's date to ensure we get the latest data
+    // This is because some data may be published with a slight delay
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    // Build the API URL with all necessary parameters
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=${limit}&observation_end=${tomorrowStr}&_=${timestamp}`;
+    
+    console.log(`Fetching FRED data for ${seriesId} with end date ${tomorrowStr}`);
+    
+    // Implement retry logic with exponential backoff
+    const maxRetries = 3;
+    let retries = 0;
+    let lastError: Error | null = null;
+    
+    while (retries < maxRetries) {
+      try {
+        // Update the fetch options to disable caching and ensure we get fresh data
+        const response = await fetch(url, { 
+          cache: 'no-store',
+          next: { revalidate: 0 },
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store',
+            'Pragma': 'no-cache'
+          }
         });
         
-        // Handle rate limiting specially
-        if (response.status === 429) {
-          const retryAfter = response.headers.get('Retry-After') || '5';
-          const waitTime = parseInt(retryAfter, 10) * 1000;
-          console.log(`Rate limited. Waiting ${waitTime}ms before retry.`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-          retries++;
-          continue;
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`FRED API error for ${seriesId}:`, {
+            status: response.status,
+            statusText: response.statusText,
+            responseText: errorText
+          });
+          
+          // Handle rate limiting specially
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After') || '5';
+            const waitTime = parseInt(retryAfter, 10) * 1000;
+            console.log(`Rate limited. Waiting ${waitTime}ms before retry.`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            retries++;
+            continue;
+          }
+          
+          throw new Error(`FRED API error: ${response.status} ${response.statusText}`);
         }
         
-        throw new Error(`FRED API error: ${response.status} ${response.statusText}`);
+        const data = await response.json();
+        
+        // Log the dates we received to help with debugging
+        if (data && data.observations && data.observations.length > 0) {
+          console.log(`FRED data for ${seriesId}: got ${data.observations.length} observations, latest date: ${data.observations[0].date}`);
+        } else {
+          console.warn(`FRED data for ${seriesId}: No observations returned`);
+        }
+        
+        return data;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.error(`FRED API request failed for ${seriesId}:`, lastError.message);
+        
+        // Exponential backoff
+        const waitTime = Math.pow(2, retries) * 1000;
+        console.log(`FRED API request failed. Retrying in ${waitTime}ms (${retries + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        
+        retries++;
       }
-      
-      const data = await response.json();
-      
-      // Log the dates we received to help with debugging
-      if (data && data.observations && data.observations.length > 0) {
-        console.log(`FRED data for ${seriesId}: got ${data.observations.length} observations, latest date: ${data.observations[0].date}`);
-      } else {
-        console.warn(`FRED data for ${seriesId}: No observations returned`);
-      }
-      
-      return data;
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`FRED API request failed for ${seriesId}:`, lastError.message);
-      
-      // Exponential backoff
-      const waitTime = Math.pow(2, retries) * 1000;
-      console.log(`FRED API request failed. Retrying in ${waitTime}ms (${retries + 1}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
-      
-      retries++;
     }
-  }
-  
-  // If we've exhausted our retries, throw the last error
-  throw lastError || new Error(`Failed to fetch FRED data for ${seriesId} after ${maxRetries} attempts`);
+    
+    // If we've exhausted our retries, throw the last error
+    throw lastError || new Error(`Failed to fetch FRED data for ${seriesId} after ${maxRetries} attempts`);
+  });
 }
 
 /**
@@ -458,25 +538,44 @@ export async function fetchYieldCurveData(timeframe: string = '1m', forceRefresh
 
     console.log(`Fetching fresh yield curve data with timeframe ${timeframe}, limit ${limit}`);
 
-    // Fetch all required data in parallel
-    const [spreadData, tenYearData, twoYearData, historicalSpreadData] = await Promise.all([
-      fetchFredSeries(SERIES.T10Y2Y, limit),
-      fetchFredSeries(SERIES.DGS10, 1),
-      fetchFredSeries(SERIES.DGS2, 1),
-      fetchFredSeries(SERIES.T10Y2Y, historicalLimit)
-    ]);
+    // Fetch all required data sequentially instead of in parallel
+    console.log('Fetching T10Y2Y spread data...');
+    const spreadData = await fetchFredSeries(SERIES.T10Y2Y, limit);
 
     // Check for observations
     if (!spreadData.observations || spreadData.observations.length === 0) {
       throw new Error('No observations returned from FRED API for T10Y2Y');
     }
 
+    // Then fetch the yield data
+    console.log('Successfully fetched T10Y2Y data, fetching 10-year yield...');
+    const tenYearData = await fetchFredSeries(SERIES.DGS10, 1);
+
     if (!tenYearData.observations || tenYearData.observations.length === 0) {
       throw new Error('No observations returned from FRED API for DGS10');
     }
 
+    console.log('Successfully fetched DGS10 data, fetching 2-year yield...');
+    const twoYearData = await fetchFredSeries(SERIES.DGS2, 1);
+
     if (!twoYearData.observations || twoYearData.observations.length === 0) {
       throw new Error('No observations returned from FRED API for DGS2');
+    }
+
+    // Only fetch historical data if needed and not in the cache 
+    const cacheHistoricalKey = 'historical_spread_data';
+    let historicalSpreadData;
+
+    const cachedHistorical = cache.get(cacheHistoricalKey);
+    if (cachedHistorical) {
+      console.log('Using cached historical spread data');
+      historicalSpreadData = cachedHistorical;
+    } else {
+      console.log('Fetching historical spread data...');
+      historicalSpreadData = await fetchFredSeries(SERIES.T10Y2Y, historicalLimit);
+      
+      // Cache historical data separately
+      cache.set(cacheHistoricalKey, historicalSpreadData);
     }
 
     // Check if we have the latest data
@@ -643,9 +742,18 @@ export function storeYieldCurveDataLocally(data: YieldCurveData): void {
   if (typeof window === 'undefined') return;
   
   try {
+    // Validate data before storing
+    if (!data || typeof data !== 'object') {
+      console.error('Invalid yield curve data provided for local storage', data);
+      return;
+    }
+    
+    // Clone data to avoid reference issues
+    const dataToStore = JSON.parse(JSON.stringify(data));
+    
     const storageKey = 'yield_curve_data_cache';
     const storageData = {
-      data,
+      data: dataToStore,
       timestamp: Date.now(),
       expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours expiry
     };
@@ -669,19 +777,34 @@ export function getYieldCurveDataFromLocalStorage(): YieldCurveData | null {
     const storageKey = 'yield_curve_data_cache';
     const storedDataJson = localStorage.getItem(storageKey);
     
-    if (!storedDataJson) return null;
+    if (!storedDataJson) {
+      console.log('No yield curve data found in local storage');
+      return null;
+    }
     
     const storedData = JSON.parse(storedDataJson);
     
     // Check if data is expired
-    if (storedData.expiresAt < Date.now()) {
+    if (!storedData.expiresAt || storedData.expiresAt < Date.now()) {
+      console.log('Cached yield curve data is expired, removing from local storage');
       localStorage.removeItem(storageKey);
       return null;
     }
     
+    console.log('Retrieved yield curve data from local storage', {
+      timestamp: new Date(storedData.timestamp).toISOString(),
+      expires: new Date(storedData.expiresAt).toISOString()
+    });
+    
     return storedData.data as YieldCurveData;
   } catch (error) {
     console.error('Failed to retrieve yield curve data from local storage:', error);
+    // Try to clean up possibly corrupted data
+    try {
+      localStorage.removeItem('yield_curve_data_cache');
+    } catch (e) {
+      // Ignore cleanup errors
+    }
     return null;
   }
 }

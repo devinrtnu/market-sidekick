@@ -1,6 +1,7 @@
 ---
-description: Tailwind CSS 4 best practices and migration guide
-globs: **/*.css, **/*.tsx, **/*.jsx, tailwind.config.js, tailwind.config.ts
+description: 
+globs: 
+alwaysApply: true
 ---
 
 # Tailwind CSS 4 rules

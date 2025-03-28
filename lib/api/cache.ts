@@ -26,7 +26,7 @@ interface CacheStats {
  */
 export class Cache {
   private cache: Record<string, CacheEntry> = {};
-  private ttl: number; // Time to live in milliseconds
+  private ttl: Record<string, number> = {}; // Time to live in milliseconds
   private stats: CacheStats = {
     hits: 0,
     misses: 0,
@@ -36,8 +36,9 @@ export class Cache {
     newestEntry: null
   };
   
-  constructor(ttlMs: number) {
-    this.ttl = ttlMs;
+  constructor() {
+    // Initialize default TTLs
+    this.ttl['default'] = 10000; // 10 seconds
   }
   
   /**
@@ -51,7 +52,7 @@ export class Cache {
     }
     
     const now = Date.now();
-    if (now - entry.timestamp > this.ttl) {
+    if (now - entry.timestamp > this.ttl[key] || now - entry.timestamp > this.ttl['default']) {
       this.stats.misses++;
       return null; // Expired
     }
@@ -79,7 +80,7 @@ export class Cache {
     entry.accessCount++;
     
     // Track stale hits separately
-    if (now - entry.timestamp > this.ttl) {
+    if (now - entry.timestamp > this.ttl[key] || now - entry.timestamp > this.ttl['default']) {
       this.stats.staleHits++;
     }
     
@@ -100,7 +101,7 @@ export class Cache {
     const entry = this.cache[key];
     if (!entry) return true;
     
-    return Date.now() - entry.timestamp > this.ttl;
+    return Date.now() - entry.timestamp > this.ttl[key] || Date.now() - entry.timestamp > this.ttl['default'];
   }
   
   /**
@@ -154,7 +155,7 @@ export class Cache {
     const entry = this.cache[key];
     if (!entry) return null;
     
-    return this.ttl - (Date.now() - entry.timestamp);
+    return this.ttl[key] - (Date.now() - entry.timestamp);
   }
   
   /**

@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, AlertCircle, Clock, Info, RefreshCw } from 'lucide-react'
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
+import { TrendingUp, TrendingDown, AlertCircle, Clock, Info, RefreshCw, Loader2 } from 'lucide-react'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip, ReferenceLine } from 'recharts'
 
 import {
   Card,
@@ -26,6 +26,7 @@ interface ChartDataPoint {
   date: string;
   value: number;
   isoDate?: string;
+  displayDate?: string;
 }
 
 interface SparklineDataPoint {
@@ -34,51 +35,58 @@ interface SparklineDataPoint {
   isoDate?: string;
 }
 
-function formatChartData(sparklineData: SparklineDataPoint[]): ChartDataPoint[] {
+export function formatChartData(sparklineData: SparklineDataPoint[]): ChartDataPoint[] {
   // Ensure we have valid data
   if (!sparklineData || sparklineData.length === 0) {
     console.error('No sparkline data to format for chart');
     return [];
   }
   
-  console.log('Formatting chart data, raw input:', sparklineData.map(d => ({
-    date: d.date,
-    isoDate: d.isoDate,
-    value: d.value
-  })));
-  
   // Direct conversion to handle special cases
-  let formattedData: ChartDataPoint[] = [];
+  const formattedData: ChartDataPoint[] = [];
   
   // First process all the points to ensure proper mapping
   for (const point of sparklineData) {
-    // Create a chart data point for each input point
-    // The value is already in decimal format from the API and formatSparklineData
-    // We multiply by 100 to convert to percentage for display
+    // Convert from decimal to percentage for display
+    // The FRED API returns values like -0.0034 which are already in decimal format
+    // We convert to percentage for display (-0.34%)
+    const percentValue = Number((point.value * 100).toFixed(2));
+    
     formattedData.push({
       date: point.date,
-      value: point.value * 100, // Convert decimal to percentage for display
+      value: percentValue,
       isoDate: point.isoDate
     });
   }
   
-  // Sort by ISO date if available
+  // Sort by ISO date if available or use formatted date with current year
   formattedData.sort((a, b) => {
-    // If we have ISO dates, use those for accurate sorting
     if (a.isoDate && b.isoDate) {
       return new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime();
     }
     
-    // Otherwise fall back to parsing the formatted dates
     const yearNow = new Date().getFullYear();
     const dateA = new Date(`${a.date} ${yearNow}`);
     const dateB = new Date(`${b.date} ${yearNow}`);
     return dateA.getTime() - dateB.getTime();
   });
   
-  console.log('Final chart data points:', formattedData.map(p => `${p.date} (${p.isoDate || 'no-iso'}): ${p.value.toFixed(2)}%`));
+  // Add displayDate property for better display on charts
+  const processedData = formattedData.map((point, index) => {
+    // Only show every 5th date on the x-axis to avoid crowding
+    // But always show the first and last point
+    const showLabel = index === 0 || index === formattedData.length - 1 || index % 5 === 0;
+    return {
+      ...point,
+      displayDate: showLabel ? point.date : ''
+    };
+  });
   
-  return formattedData;
+  console.log('Final chart data points:', processedData.slice(0, 3).map(p => 
+    `${p.date} (${p.isoDate || 'no-iso'}): ${p.value.toFixed(2)}%`
+  ));
+  
+  return processedData;
 }
 
 /**
@@ -116,27 +124,53 @@ export function YieldCurveDialog() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-
-  // Check for cached data on initial load
-  useEffect(() => {
-    const cachedData = getYieldCurveDataFromLocalStorage();
-    if (cachedData && !data) {
-      console.log('Using cached yield curve data from local storage');
-      setData(cachedData);
-      setLastUpdated(new Date());
-      setLoading(false);
-      // We still fetch fresh data but have something to show immediately
-      fetchData(true);
-    }
-  }, []);
+  const [rateLimited, setRateLimited] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
   // Function to fetch data with optional force refresh
   const fetchData = async (forceRefresh: boolean = false) => {
     try {
       setLoading(true);
       setError(null);
+      setRateLimited(false);
       console.log(`Fetching yield curve data with timeframe: ${selectedTimeframe}, forceRefresh: ${forceRefresh}`);
-      const yieldData = await fetchYieldCurveData(selectedTimeframe, forceRefresh);
+      
+      // Use the API endpoint instead of direct FRED call
+      const url = `/api/indicators/yield-curve?period=${selectedTimeframe}${forceRefresh ? '&refresh=true' : ''}`;
+      
+      // Add a loading message to indicate we're checking the database
+      if (!forceRefresh) {
+        setLoadingMessage('Checking database for recent data...');
+      } else {
+        setLoadingMessage('Fetching fresh data from FRED...');
+      }
+      
+      const response = await fetch(url);
+      
+      // Update loading message after response received
+      setLoadingMessage(null);
+      
+      // Handle specific error cases
+      if (response.status === 429) {
+        console.warn('API rate limit reached. Try again in a few minutes.');
+        setRateLimited(true);
+        setError('Rate limit reached. Try again in a few minutes.');
+        
+        // Use cached data if available
+        const cachedData = getYieldCurveDataFromLocalStorage();
+        if (cachedData) {
+          setData(cachedData);
+          setLastUpdated(new Date());
+        }
+        
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`API response error: ${response.status} ${response.statusText}`);
+      }
+      
+      const yieldData = await response.json();
       
       // Check if we received data with an error status
       if (yieldData.status === 'error') {
@@ -148,11 +182,14 @@ export function YieldCurveDialog() {
         storeYieldCurveDataLocally(yieldData);
       }
       
+      // Log the data source info
+      console.log('Yield curve data source:', yieldData.source || 'Database');
+      
       // Log the data dates to verify we're getting the most recent data
       if (yieldData.sparklineData && yieldData.sparklineData.length > 0) {
         console.log('Yield curve sparkline dates:', {
           dataPoints: yieldData.sparklineData.length,
-          dates: yieldData.sparklineData.map(point => point.date).join(', '),
+          dates: yieldData.sparklineData.slice(0, 5).map((point: SparklineDataPoint) => point.date).join(', ') + '...',
           latestDate: yieldData.sparklineData[yieldData.sparklineData.length - 1].date
         });
       } else {
@@ -184,22 +221,47 @@ export function YieldCurveDialog() {
     }
   };
 
+  // Check for cached data on initial load
+  useEffect(() => {
+    const cachedData = getYieldCurveDataFromLocalStorage();
+    if (cachedData && !data) {
+      console.log('Using cached yield curve data from local storage');
+      setData(cachedData);
+      setLastUpdated(new Date());
+      setLoading(false);
+      // We still fetch fresh data but have something to show immediately
+      fetchData(true);
+    } else if (!data) {
+      // Initial fetch if we don't have cached data
+      fetchData(true);
+    }
+  }, [data, fetchData]);
+
   // Handle manual refresh
   const handleRefresh = () => {
-    setRetryCount(prev => prev + 1);
-    fetchData(true);
+    // Only trigger refresh if not already loading
+    if (!loading) {
+      setRetryCount(prev => prev + 1);
+      fetchData(true);
+    }
   };
 
   // Fetch data when timeframe changes or on retry
   React.useEffect(() => {
     fetchData(true);
-  }, [selectedTimeframe, retryCount]);
+  }, [selectedTimeframe, retryCount, fetchData]);
 
   // Loading state
   if (loading && !data) {
     return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center justify-center p-4">
+        <div className="mb-2 flex items-center">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          <span>Loading...</span>
+        </div>
+        {loadingMessage && (
+          <div className="text-sm text-muted-foreground">{loadingMessage}</div>
+        )}
       </div>
     );
   }
@@ -308,6 +370,20 @@ export function YieldCurveDialog() {
         </div>
       )}
       
+      {/* Rate limiting warning */}
+      {rateLimited && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-3 flex items-start space-x-3">
+          <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-medium text-amber-800 dark:text-amber-300">API Rate Limit Reached</h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+              The FRED API is rate-limited to prevent overuse. We're showing cached data for now.
+              Please wait a few minutes before refreshing again.
+            </p>
+          </div>
+        </div>
+      )}
+      
       {/* Timeframe selector */}
       <Tabs defaultValue={selectedTimeframe} onValueChange={setSelectedTimeframe} className="w-full">
         <TabsList className="grid grid-cols-6 w-full md:w-[400px]">
@@ -337,42 +413,35 @@ export function YieldCurveDialog() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis 
                     dataKey="date"
-                    hide={true}
+                    height={30}
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value, index) => {
+                      // Only display certain dates to prevent crowding
+                      const point = chartData[index];
+                      return point?.displayDate || '';
+                    }}
                   />
                   <YAxis 
                     tickFormatter={(value) => `${value.toFixed(2)}%`}
-                    domain={['auto', 'auto']}
+                    domain={isNegative ? [-0.5, 0.5] : [0, 0.5]}
                     tick={{ fontSize: 12 }}
+                    label={{ value: 'Spread (%)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } }}
                   />
                   <Tooltip 
                     formatter={(value: number) => [`${value.toFixed(2)}%`, 'Yield Spread']}
-                    labelFormatter={(label) => formatDate(label as string)}
+                    labelFormatter={(label) => label}
+                    contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: '#fff', border: 'none', borderRadius: '4px' }}
                   />
                   <Line
                     type="monotone"
                     dataKey="value"
                     stroke={isNegative ? '#EF4444' : '#10B981'}
                     strokeWidth={2}
-                    dot={{ r: 0 }}
+                    dot={{ r: 1 }}
                     activeDot={{ r: 6 }}
                   />
-                  
-                  {/* Special line just for March 27th data point */}
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    data={chartData.filter(point => 
-                      point.date === 'Mar 27' || (point.isoDate && point.isoDate.includes('2025-03-27'))
-                    )}
-                    stroke="transparent"
-                    strokeWidth={0}
-                    dot={{
-                      r: 5,
-                      fill: isNegative ? '#EF4444' : '#10B981',
-                      stroke: 'white',
-                      strokeWidth: 2
-                    }}
-                  />
+                  {/* Add zero reference line */}
+                  <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (

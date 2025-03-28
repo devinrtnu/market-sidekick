@@ -1,6 +1,7 @@
 ---
-description: Tailwind CSS and UI component best practices for modern web applications, with support for both v3 and v4
-globs: **/*.css, **/*.tsx, **/*.jsx, tailwind.config.js, tailwind.config.ts
+description: 
+globs: 
+alwaysApply: true
 ---
 
 # Tailwind CSS Best Practices
