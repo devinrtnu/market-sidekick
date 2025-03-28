@@ -157,6 +157,13 @@ export function validateYieldCurveData(data: any): boolean {
     return false;
   }
 
+  // Allow a special error status to pass validation
+  if (data.status === 'error') {
+    console.warn('Validating data with error status - allowing this as fallback');
+    // For error status data, we still require minimal properties
+    return data.title && (typeof data.value === 'string' || typeof data.value === 'number');
+  }
+
   // Validate title and value
   if (typeof data.title !== 'string' || data.title.trim() === '') {
     console.error('Invalid or missing yield curve title');
@@ -187,7 +194,8 @@ export function validateYieldCurveData(data: any): boolean {
     return false;
   }
 
-  // Validate reasonable spread range (-5% to 5%)
+  // Validate reasonable spread range (-5% to 5%) as decimal
+  // This allows for extreme scenarios but catches obvious errors
   if (data.spread < -0.05 || data.spread > 0.05) {
     console.error('Yield curve spread out of reasonable range:', data.spread);
     return false;
@@ -204,7 +212,7 @@ export function validateYieldCurveData(data: any): boolean {
     return false;
   }
 
-  // Validate reasonable yield ranges (0% to 25%)
+  // Validate reasonable yield ranges (0% to 25%) as decimal
   if (data.tenYearYield < 0 || data.tenYearYield > 0.25) {
     console.error('10-year yield out of reasonable range:', data.tenYearYield);
     return false;
@@ -216,27 +224,35 @@ export function validateYieldCurveData(data: any): boolean {
   }
 
   // Validate sparkline data
-  if (!Array.isArray(data.sparklineData) || data.sparklineData.length < 2) {
-    console.error('Invalid or insufficient yield curve sparkline data');
+  if (!Array.isArray(data.sparklineData)) {
+    console.error('Invalid yield curve sparkline data');
     return false;
   }
 
-  // Validate each sparkline data point
-  for (const point of data.sparklineData) {
-    if (typeof point.date !== 'string' || point.date.trim() === '') {
-      console.error('Invalid date in yield curve sparkline data');
-      return false;
-    }
+  // For error status, we allow empty sparkline data
+  if (data.sparklineData.length < 2 && data.status !== 'error') {
+    console.error('Insufficient yield curve sparkline data points');
+    return false;
+  }
 
-    if (typeof point.value !== 'number' || isNaN(point.value)) {
-      console.error('Invalid value in yield curve sparkline data');
-      return false;
-    }
+  // Validate each sparkline data point only if we have sparkline data
+  if (data.sparklineData.length > 0) {
+    for (const point of data.sparklineData) {
+      if (typeof point.date !== 'string' || point.date.trim() === '') {
+        console.error('Invalid date in yield curve sparkline data');
+        return false;
+      }
 
-    // Check value ranges for spread
-    if (point.value < -0.05 || point.value > 0.05) {
-      console.error('Yield curve sparkline value out of range:', point.value);
-      return false;
+      if (typeof point.value !== 'number' || isNaN(point.value)) {
+        console.error('Invalid value in yield curve sparkline data');
+        return false;
+      }
+
+      // Check value ranges for spread as decimal (-5% to 5%)
+      if (point.value < -0.05 || point.value > 0.05) {
+        console.error('Yield curve sparkline value out of range:', point.value);
+        return false;
+      }
     }
   }
 

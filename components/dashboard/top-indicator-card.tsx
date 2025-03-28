@@ -97,7 +97,9 @@ export function TopIndicatorCard({
         {/* Right Section: Value & Change */}
         <div className="flex flex-col items-end justify-center w-[40%] sm:w-[35%] md:w-[30%]">
           <p className="text-sm font-medium text-right">
-            {typeof value === 'number' ? value.toFixed(2) : value}
+            {typeof value === 'number' 
+              ? `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+              : value}
           </p>
           <Badge
             variant="outline"
