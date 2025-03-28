@@ -224,18 +224,29 @@ export function YieldCurveDialog() {
   // Check for cached data on initial load
   useEffect(() => {
     const cachedData = getYieldCurveDataFromLocalStorage();
-    if (cachedData && !data) {
+    if (cachedData) {
       console.log('Using cached yield curve data from local storage');
       setData(cachedData);
-      setLastUpdated(new Date());
+      setLastUpdated(new Date(cachedData.lastUpdated || new Date()));
       setLoading(false);
-      // We still fetch fresh data but have something to show immediately
-      fetchData(true);
-    } else if (!data) {
-      // Initial fetch if we don't have cached data
-      fetchData(true);
+      
+      // Only fetch fresh data if the cached data is older than 1 hour
+      const cachedTime = new Date(cachedData.lastUpdated || 0).getTime();
+      const now = new Date().getTime();
+      const oneHourMs = 60 * 60 * 1000;
+      
+      if (now - cachedTime > oneHourMs) {
+        // Refresh in background if data is older than 1 hour
+        console.log('Cached data is older than 1 hour, refreshing in background');
+        fetchData(true);
+      } else {
+        console.log('Cached data is recent, no need to refresh');
+      }
+    } else {
+      // No cached data available, fetch fresh data
+      fetchData(false);
     }
-  }, [data, fetchData]);
+  }, []);
 
   // Handle manual refresh
   const handleRefresh = () => {

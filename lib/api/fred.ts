@@ -4,9 +4,10 @@ import { YieldCurveData, SparklineDataPoint } from './types';
 // Global API request throttling
 const API_REQUESTS = {
   lastRequestTime: 0,
-  minInterval: 2000, // Minimum time between requests (2 seconds)
+  minInterval: 1000, // Minimum time between requests (1 second)
   queue: [] as (() => void)[],
-  processing: false
+  processing: false,
+  maxParallelRequests: 2 // Allow up to 2 parallel requests
 };
 
 /**
@@ -56,13 +57,33 @@ async function queueRequest<T>(fn: () => Promise<T>): Promise<T> {
  * Process next request in the queue
  */
 function processNextRequest() {
-  if (API_REQUESTS.queue.length === 0 || API_REQUESTS.processing) {
+  if (API_REQUESTS.queue.length === 0) {
     return;
   }
   
+  // Count current processing requests
+  const currentProcessing = API_REQUESTS.processing ? 1 : 0;
+  
+  // Process up to maxParallelRequests
+  const requestsToProcess = Math.min(
+    API_REQUESTS.maxParallelRequests - currentProcessing,
+    API_REQUESTS.queue.length
+  );
+  
+  if (requestsToProcess <= 0) {
+    return; // Already at max parallel requests
+  }
+  
   API_REQUESTS.processing = true;
-  const nextRequest = API_REQUESTS.queue.shift();
-  if (nextRequest) nextRequest();
+  
+  // Process multiple requests
+  for (let i = 0; i < requestsToProcess; i++) {
+    const nextRequest = API_REQUESTS.queue.shift();
+    if (nextRequest) {
+      // Execute each request independently
+      nextRequest();
+    }
+  }
 }
 
 // Cache instance with 15-minute expiration (15 * 60 * 1000 ms)
@@ -547,35 +568,45 @@ export async function fetchYieldCurveData(timeframe: string = '1m', forceRefresh
       throw new Error('No observations returned from FRED API for T10Y2Y');
     }
 
-    // Then fetch the yield data
-    console.log('Successfully fetched T10Y2Y data, fetching 10-year yield...');
-    const tenYearData = await fetchFredSeries(SERIES.DGS10, 1);
+    // Fetch 10-year and 2-year yield data in parallel
+    console.log('Successfully fetched T10Y2Y data, fetching yield data in parallel...');
+    const [tenYearData, twoYearData] = await Promise.all([
+      fetchFredSeries(SERIES.DGS10, 1),
+      fetchFredSeries(SERIES.DGS2, 1)
+    ]);
 
     if (!tenYearData.observations || tenYearData.observations.length === 0) {
       throw new Error('No observations returned from FRED API for DGS10');
     }
 
-    console.log('Successfully fetched DGS10 data, fetching 2-year yield...');
-    const twoYearData = await fetchFredSeries(SERIES.DGS2, 1);
-
     if (!twoYearData.observations || twoYearData.observations.length === 0) {
       throw new Error('No observations returned from FRED API for DGS2');
     }
 
-    // Only fetch historical data if needed and not in the cache 
+    // Only fetch historical data if needed (for longer timeframes) and not in the cache 
     const cacheHistoricalKey = 'historical_spread_data';
     let historicalSpreadData;
 
-    const cachedHistorical = cache.get(cacheHistoricalKey);
-    if (cachedHistorical) {
-      console.log('Using cached historical spread data');
-      historicalSpreadData = cachedHistorical;
+    // For shorter timeframes, we don't need extensive historical data
+    // Only fetch for 1y+ timeframes
+    const needsHistoricalData = ['1y', '2y', '5y', '10y'].includes(timeframe);
+
+    if (!needsHistoricalData) {
+      // For shorter timeframes, just use the current spread data
+      historicalSpreadData = spreadData;
+      console.log('Using current spread data for inversion detection, historical data not needed');
     } else {
-      console.log('Fetching historical spread data...');
-      historicalSpreadData = await fetchFredSeries(SERIES.T10Y2Y, historicalLimit);
-      
-      // Cache historical data separately
-      cache.set(cacheHistoricalKey, historicalSpreadData);
+      const cachedHistorical = cache.get(cacheHistoricalKey);
+      if (cachedHistorical) {
+        console.log('Using cached historical spread data');
+        historicalSpreadData = cachedHistorical;
+      } else {
+        console.log('Fetching historical spread data for long-term analysis...');
+        historicalSpreadData = await fetchFredSeries(SERIES.T10Y2Y, historicalLimit);
+        
+        // Cache historical data separately with longer expiration
+        cache.set(cacheHistoricalKey, historicalSpreadData);
+      }
     }
 
     // Check if we have the latest data

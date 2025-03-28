@@ -158,18 +158,33 @@ async function getLatestYieldCurveFromDB(timeframe: string = '1m'): Promise<{dat
     
     // Set maximum data points to prevent memory issues with long timeframes
     // For longer periods, we'll use fewer points (weekly rather than daily)
-    let maxDataPoints = daysLimit;
+    let maxDataPoints = 60; // Cap at 60 points for any timeframe
     let skipFactor = 1;
     
-    if (timeframe === '1y') {
-      maxDataPoints = 365; // Daily for 1 year
-    } else if (timeframe === '2y') {
-      maxDataPoints = 365; // Approximately 2 points per week for 2 years
+    if (timeframe === '1m') {
+      // Daily data for 1 month is fine (approx 30 points)
+      skipFactor = 1;
+      maxDataPoints = 30;
+    } else if (timeframe === '3m') {
+      // Every 2nd day for 3 months (~45 points)
       skipFactor = 2; 
+      maxDataPoints = 45;
+    } else if (timeframe === '6m') {
+      // Every 3rd day for 6 months (~60 points)
+      skipFactor = 3;
+      maxDataPoints = 60;
+    } else if (timeframe === '1y') {
+      // Every 6th day for 1 year (~60 points)
+      skipFactor = 6;
+      maxDataPoints = 60;
+    } else if (timeframe === '2y') {
+      // Every 12th day for 2 years (~60 points)
+      skipFactor = 12;
+      maxDataPoints = 60;
     } else if (timeframe === '5y') {
-      maxDataPoints = 260; // Approximately 1 point per week for 5 years (5*52)
-      skipFactor = 7; // Weekly data points
-      daysLimit = 5 * 365; // Limit to 5 years of days (simplified)
+      // Weekly data for 5 years (~260 points)
+      skipFactor = 7;
+      maxDataPoints = 260;
     }
     
     console.log(`[API DEBUG] Using daysLimit of ${daysLimit} with maxDataPoints ${maxDataPoints} and skipFactor ${skipFactor}`);

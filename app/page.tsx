@@ -26,8 +26,8 @@ export default async function Home() {
   // Fetch yield curve data
   let yieldCurveData;
   try {
-    console.log('Dashboard: Fetching yield curve data with force refresh');
-    yieldCurveData = await fetchYieldCurveData('1m', true);
+    console.log('Dashboard: Fetching yield curve data from database first');
+    yieldCurveData = await fetchYieldCurveData('1m', false);
     
     // Log the data for debugging
     console.log('Yield curve data fetched:', {
