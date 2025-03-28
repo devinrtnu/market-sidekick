@@ -31,6 +31,9 @@ import {
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
 import { useState } from 'react'
 import { YieldCurveDialog } from '@/components/dialogs/indicators/YieldCurveDialog'
+import { VixDialog } from '@/components/dialogs/indicators/VixDialog'
+import { PutCallRatioDialog } from '@/components/dialogs/indicators/PutCallRatioDialog'
+import { PutCallRatioIndicator } from '@/components/dashboard/PutCallRatioIndicator'
 
 export interface IndicatorProps {
   id: string
@@ -73,7 +76,11 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
                 {label}
               </span>
               <span className="font-bold text-muted-foreground">
-                {payload[0].value}
+                {indicator.id === 'yield-curve' 
+                  ? `${(payload[0].value * 100).toFixed(2)}%` 
+                  : typeof payload[0].value === 'number' 
+                    ? payload[0].value.toFixed(2) 
+                    : payload[0].value}
               </span>
             </div>
           </div>
@@ -212,6 +219,10 @@ export function IndicatorCard({ indicator }: { indicator: IndicatorProps }) {
         </DialogHeader>
         {indicator.name === "Yield Curve" ? (
           <YieldCurveDialog />
+        ) : indicator.id === "vix" || indicator.name === "VIX" ? (
+          <VixDialog />
+        ) : indicator.id === "put-call-ratio" || indicator.name === "Put/Call Ratio" ? (
+          <PutCallRatioDialog />
         ) : (
           <p>Details for {indicator.name} will be available soon.</p>
         )}

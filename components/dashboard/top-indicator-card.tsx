@@ -46,30 +46,51 @@ export function TopIndicatorCard({
         <div className="flex flex-col w-[55%] sm:w-[60%] md:w-[65%]"> 
           <p className="text-sm font-medium truncate">{title}</p>
           <div className="h-8 w-[80%] sm:w-[85%] md:w-[75%] xl:w-[85%] 2xl:w-full mt-4 overflow-hidden">
-            {sparklineData && sparklineData.length > 1 && (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={sparklineData}
-                  margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={sparklineColor} stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor={sparklineColor} stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={sparklineColor}
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill={`url(#${gradientId})`}
-                    isAnimationActive={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
+            {sparklineData && sparklineData.length > 1 && (() => {
+              // Normalize data for better visualization
+              const values = sparklineData.map(d => d.value);
+              const min = Math.min(...values);
+              const max = Math.max(...values);
+              const range = max - min;
+              
+              // Add padding to prevent the line from touching edges
+              const padding = range * 0.15; // Increased padding for better visibility
+              const adjustedMin = min - padding;
+              const adjustedMax = max + padding;
+              const adjustedRange = adjustedMax - adjustedMin;
+              
+              const normalizedData = sparklineData.map(d => ({
+                ...d,
+                value: ((d.value - adjustedMin) / adjustedRange) * 85 + 5 // Scale to 5-90 range for better visibility
+              }));
+              
+              return (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={normalizedData}
+                    margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={sparklineColor} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={sparklineColor} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      type="monotoneX"
+                      dataKey="value"
+                      stroke={sparklineColor}
+                      strokeWidth={1.5}
+                      fillOpacity={1}
+                      fill={`url(#${gradientId})`}
+                      isAnimationActive={false}
+                      dot={false}
+                      connectNulls={true}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              );
+            })()}
           </div>
         </div>
 
