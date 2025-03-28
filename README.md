@@ -1,424 +1,246 @@
-# Spark Foundation
+# 📊 Market Sidekick
 
-A modern, high-performance Next.js starter template for building scalable web applications. Built with Next.js 15, React 19, TypeScript, Tailwind CSS, and Shadcn UI.
+> 🚀 Simplifying financial decisions for long-term investors
 
-## 🚀 Features
+Market Sidekick is a financial tool designed to help long-term investors make more informed decisions by providing clear, simplified market indicators, stock analysis, and guided reflection before making investment decisions.
 
-- **Next.js 15** with App Router
-- **React 19** for enhanced performance
+![Market Sidekick Dashboard](public/og.png)
+
+## 🌟 Introduction
+
+### 🔍 What is Market Sidekick?
+
+Market Sidekick is a modern web application that transforms complex financial data into accessible insights for individual investors. It provides a comprehensive dashboard of market indicators with plain-language explanations, a watchlist for tracking potential investments, detailed stock analysis, and a structured reflection process to encourage thoughtful investment decisions.
+
+### 🤔 Problem Statement
+
+Individual investors face several challenges in today's complex financial markets:
+
+1. **Information Overload**: Financial markets generate overwhelming amounts of data, making it difficult to identify what's truly relevant.
+2. **Technical Complexity**: Market indicators and financial metrics often require specialized knowledge to interpret correctly.
+3. **Emotional Trading**: Investment decisions are frequently driven by emotions rather than rational analysis, leading to poor outcomes.
+4. **Lack of Reflection**: Investors often don't document their reasoning for trades, missing opportunities to learn from past decisions.
+5. **Unclear Market Context**: Understanding the broader market environment and how it affects individual investments can be challenging.
+
+### 👥 Target Users
+
+- **Primary**: Long-term individual investors who want to make informed decisions without becoming full-time traders
+- **Secondary**: Investment education seekers who are learning about financial markets and investing
+
+## ✨ Core Features
+
+### 📈 Market Dashboard
+
+- **Key Market Indicators**: Visual representation of market health with status indicators
+- **Indicator Details**: Expandable cards with detailed information and historical context
+- **AI-Powered Explanations**: Plain-language explanations of complex financial concepts
+- **Price Tracking**: Real-time prices for major market indices
+- **Interactive Visualizations**: Sparklines and charts for important metrics
+
+### 👁️ Stock Watchlist
+
+- **Customizable Tracking**: Monitor potential investments with personalized watchlists
+- **Technical & Fundamental Metrics**: Display key stock data including price, RSI, moving averages
+- **Visual Indicators**: Color-coded metrics for quick status assessment
+- **Sorting & Filtering**: Organize stocks based on various criteria
+- **Quick Access**: Direct links to detailed stock views
+
+### 🔎 Stock Detail View
+
+- **Comprehensive Metrics**: In-depth technical and fundamental data
+- **Price History**: Visual representation of historical performance
+- **AI Analysis**: Automated insights about the stock's current position
+- **Decision Support**: Direct links to the reflection tool for buy/sell decisions
+
+### 🧠 Reflection Tool
+
+- **Guided Decision Process**: Structured questionnaire before executing trades
+- **Investment Reasoning**: Capture your rationale for buy/sell decisions
+- **Historical Record**: Store past decisions for future review and learning
+- **Emotion Mitigation**: Tools to reduce impulsive trading behaviors
+
+### ⚙️ Settings & Preferences
+
+- **Theme Customization**: Light and dark mode options
+- **Display Preferences**: Customize which metrics and indicators are shown
+- **Notification Settings**: Configure alerts for price movements or indicator changes
+- **API Key Management**: Connect to various financial data sources
+
+## 🛠️ Technical Stack
+
+Market Sidekick is built with modern web technologies:
+
+- **Next.js 15** with App Router architecture
+- **React 19** for UI components
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
-- **Shadcn UI** for accessible component library
-- **TurboPackr** for faster development
+- **shadcn/ui** for accessible, customizable components
+- **recharts** for data visualization
 - **Zod** for schema validation
-- **Vercel AI SDK** for AI features
-- **nuqs** for URL search param management
-- **Type-safe Local Storage** for client-side persistence
-- **Modular architecture** for scalability
-- **Advanced SEO** with dynamic OG images
-
-## 📋 Prerequisites
-
-- Node.js 18.17.0 or later
-- npm 9.6.0 or later
-
-## 🛠️ Getting Started
-
-### Step 1: Clone the repository
-
-```bash
-git clone https://github.com/yourusername/spark-foundation.git
-cd spark-foundation
-```
-
-### Step 2: Reset Git repository
-
-After cloning, you'll want to remove the existing Git history so you can start fresh with your own repository:
-
-```bash
-# Remove the existing Git repository
-rm -rf .git
-
-# Initialize a new Git repository
-git init
-
-# Add all files to the new repository
-git add .
-
-# Create an initial commit
-git commit -m "Initial commit"
-```
-
-### Step 3: Link to your own repository (optional)
-
-To connect this project to your own GitHub repository:
-
-```bash
-# Add your repository as the origin
-git remote add origin https://github.com/your-username/your-repo-name.git
-
-# Push to your repository
-git push -u origin main
-```
-
-### Step 4: Install dependencies
-
-```bash
-npm install
-```
-
-### Step 5: Set up environment variables
-
-Copy the environment template:
-
-```bash
-cp .env.local.template .env.local
-```
-
-Edit `.env.local` and configure the necessary variables:
-
-```
-# Required - Application URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Optional - Uncomment and configure based on your requirements
-# Supabase, Stripe, authentication, etc.
-```
-
-### Step 6: Run the development server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see your application.
+- **Local Storage** for client-side persistence
 
 ## 📁 Project Structure
 
 ```
-spark-foundation/
-├── .cursor/               # Cursor IDE rules for code standards
-├── app/                   # Next.js app directory (App Router)
-│   ├── page.tsx           # Home page
-│   ├── layout.tsx         # Root layout
-│   ├── globals.css        # Global styles
-│   ├── api/               # API routes
-│   │   └── og/            # Dynamic OG image generation
-│   └── examples/          # Example implementations
-│       └── seo/           # SEO implementation examples
-├── hooks/                 # Custom React hooks
-├── lib/                   # Utility functions
-├── prompts/               # Prompt engineering helpers
-├── public/                # Static assets
-├── .env.local.template    # Environment variables template
-├── components.json        # Shadcn UI configuration
-├── next.config.ts         # Next.js configuration
-├── tsconfig.json          # TypeScript configuration
-└── package.json           # Project dependencies
+market-sidekick/
+├── app/                  # Next.js App Router pages
+│   ├── page.tsx          # Home page (Dashboard)
+│   ├── layout.tsx        # Root layout
+│   ├── globals.css       # Global styles
+│   └── api/              # API routes
+├── components/           # Shared components
+│   ├── ui/               # Base UI components (shadcn)
+│   ├── dashboard/        # Dashboard-specific components
+│   │   ├── indicator-card.tsx        # Market indicator card
+│   │   ├── market-price-card.tsx     # Market price display
+│   │   ├── stock-table.tsx           # Watchlist table
+│   │   └── chart-component.tsx       # Chart visualizations
+│   ├── dialogs/          # Dialog components
+│   └── icons/            # Icon components
+├── hooks/                # Custom React hooks
+├── lib/                  # Utility functions and helpers
+│   ├── api/              # API utilities
+│   ├── storage/          # Local storage utilities
+│   └── utils/            # Helper functions
+├── public/               # Static assets
+└── memory-bank/          # Project documentation
 ```
 
-## 🧩 Available Integrations
+## 🚀 Getting Started
 
-The project is designed for easy integration with:
+### 📋 Prerequisites
 
-> **💡 PRO TIP**: When using Cursor's AI assistant for any integration, always include the `@Web` command in your prompts (e.g., `@Web Please help me...`). This allows the AI to search the latest documentation and provide up-to-date implementation guidance.
+- **Node.js 18.17.0 or later** - [Download from nodejs.org](https://nodejs.org/)
+- **npm 9.6.0 or later** - Included with Node.js installation
+- **Git** - [Download from git-scm.com](https://git-scm.com/downloads)
 
-### Supabase
+### 🔧 Installation & Setup
 
-For database, authentication, and storage:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/market-sidekick.git
+   cd market-sidekick
+   ```
 
-#### Environment Setup
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Uncomment the Supabase section in `.env.local` and configure:
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-```
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key  # Optional, for admin operations
-```
+4. **View the application:**
+   - Open [http://localhost:3000](http://localhost:3000) in your browser
+   - The dashboard should load automatically with mock data
 
-#### Integration with AI Assistant
-
-This project includes a custom Supabase integration rule document that helps our AI assistant implement Supabase features correctly. To integrate Supabase using the AI assistant:
-
-> **⚠️ IMPORTANT**: Always include the `@Web` command in your prompts when working with Cursor's AI assistant for integration tasks. This ensures the AI can access the latest documentation and up-to-date information directly from the web, which is crucial for implementing current best practices.
-
-1. **Add Supabase rules to Cursor**:
-   - Open Cursor Settings (⚙️) > Features
-   - Under "Documentation", click "Add new doc"
-   - Name it "Supabase" 
-   - Enter the URL `https://supabase.com/docs` in the URL field
-   - Click "Add" to let Cursor scrape the Supabase documentation
-   - This makes Supabase documentation available via the `@supabase` reference in your prompts
-
-2. **Create a Supabase project** at [https://supabase.com](https://supabase.com) if you haven't already
-3. **Copy your Supabase project URL and anon key** from the API settings page
-4. **Open Cursor and start a new conversation**
-
-5. **Use the following prompt**:
-
-```
-Please help me implement Supabase integration with this Next.js 15 project. I need:
-
-1. Server-side authentication setup with Supabase
-2. Connection to Supabase database
-3. Middleware for session management
-4. Auth callback handler
-5. Auth utility functions for both client and server components
-6. Basic login, signup, and logout functionality using shadcn/ui components
-
-My Supabase project details:
-- Project URL: [Your Supabase Project URL]
-- Anon Key: [Your Supabase Anon Key]
-```
-
-5. **Attach these files to your conversation**:
-   - `package.json` to see existing dependencies
-   - `.env.local` if you have already set it up
-   - `app/layout.tsx` for context about your app structure
-   - `supabase.mdc` (rules file) found in your project's rules directory
-
-6. **Important**: Add these commands to your prompt:
-   - Add `@Web` in your prompt to ensure the assistant can access the latest Supabase documentation
-   - Add `@supabase` to reference the Supabase rules documentation
-   - Example prompt with commands: `@Web @supabase Please help me implement Supabase integration...`
-
-#### Official Documentation
-
-For more detailed information on working with Supabase, refer to these resources:
-
-- [Supabase Next.js Guide](https://supabase.com/docs/guides/auth/server-side/nextjs)
-- [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
-- [Supabase Database Documentation](https://supabase.com/docs/guides/database)
-- [Supabase Quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs)
-
-#### Security Best Practices
-
-When implementing Supabase:
-
-- Always use Row Level Security (RLS) policies to protect your data
-- Never expose your service role key in client-side code
-- Implement proper input validation before inserting data
-- Use TypeScript types generated from your database schema for type safety
-- Test authentication flows thoroughly before deployment
-
-### Stripe
-
-For payment processing and subscription management. Uncomment the Stripe section in `.env.local` and configure:
-
-```
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
-STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=whsec_your-stripe-webhook-secret
-NEXT_PUBLIC_STRIPE_PRO_PRICE_ID=price_your-stripe-price-id
-```
-
-### Vercel AI SDK
-
-For AI feature integration. Uncomment the relevant AI provider section in `.env.local` and configure:
-
-```
-OPENAI_API_KEY=sk-your-openai-api-key
-```
-
-### Local Storage Utilities
-
-For client-side persistence without a backend database. The project includes:
-
-- Type-safe localStorage wrappers with Zod validation
-- React hooks for easy integration with components
-- Collection management for CRUD operations
-
-Check out the example at `/examples/local-storage` to see it in action.
-
-#### Using the hooks:
-
-```tsx
-// 1. Define your data schema with Zod
-const UserPrefsSchema = z.object({
-  theme: z.enum(['light', 'dark', 'system']),
-  fontSize: z.number().min(10).max(24),
-  notifications: z.boolean()
-});
-
-type UserPrefs = z.infer<typeof UserPrefsSchema>;
-
-// 2. Use the hook in your component
-function SettingsComponent() {
-  const [prefs, setPrefs, resetPrefs] = useLocalStorage<UserPrefs>(
-    'user-preferences',
-    UserPrefsSchema,
-    { theme: 'system', fontSize: 16, notifications: true },
-    { prefix: 'app' }
-  );
-
-  // Now you can use prefs, setPrefs, and resetPrefs in your component
-  // The data will persist across page refreshes and browser sessions
-}
-```
-
-### SEO Optimization
-
-The project includes built-in SEO optimization using Next.js Metadata API:
-
-- Global metadata configuration in `app/layout.tsx`
-- Example implementation at `/examples/seo`
-- Static OG images for social sharing
-
-#### Configuring page-specific SEO:
-
-```tsx
-// app/your-page/page.tsx
-import type { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'Your Page Title',
-  description: 'Your page description',
-  openGraph: {
-    title: 'Your Page Title',
-    description: 'Your page description',
-    images: [
-      {
-        url: '/og.png',
-        width: 1200,
-        height: 630,
-        alt: 'Your Page Title',
-      },
-    ],
-  },
-}
-```
-
-#### Dynamic metadata for route parameters:
-
-```tsx
-// app/blog/[slug]/page.tsx
-import type { Metadata } from 'next'
-
-interface PageProps {
-  params: { slug: string }
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  // Fetch data based on slug
-  const post = await getPostBySlug(params.slug)
-  
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      images: [
-        {
-          url: '/og.png', // Use static OG image
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
-    },
-  }
-}
-```
-
-## 🖥️ Development Tools
-
-### Cursor Rules
-
-This project includes Cursor IDE rules for consistent code quality. The rules enforce standards for:
-
-- Clean code practices
-- TypeScript usage
-- Next.js best practices
-- Tailwind CSS organization
-- Component architecture
-- Performance optimization
-- Security practices
-
-To use these rules with Cursor IDE, ensure the `.cursor` directory is present in your project root.
-
-### Shadcn UI Components
-
-**IMPORTANT NOTE**: For optimal development experience, index the ShadCN documentation in Cursor. When requesting any ShadCN component implementation, always reference this documentation at the start of your request for accurate guidance and best practices.
-
-To add new Shadcn UI components, use:
+### 💻 Development Commands
 
 ```bash
-npx shadcn@latest add [component-name]
-```
+# Start development server
+npm run dev
 
-For example, to add a button component:
-
-```bash
-npx shadcn@latest add button
-```
-
-## 📦 Dependencies
-
-### Core
-- Next.js 15.2.3
-- React 19.0.0
-- TypeScript 5+
-
-### UI Components
-- Shadcn UI (via components.json)
-- Tailwind CSS 4
-- Lucide React for icons
-- Class Variance Authority for component variants
-
-### Data & State Management
-- Zod for schema validation
-- nuqs for URL search parameter state management
-
-### Storage
-- Type-safe localStorage utilities with Zod validation
-
-### SEO
-- Next.js Metadata API for SEO optimization
-
-### AI Features
-- Vercel AI SDK for AI integrations
-
-### Utilities
-- clsx and tailwind-merge for conditional class names
-- tailwindcss-animate for animations
-
-## 🧪 Scripts
-
-- `npm run dev` - Start the development server (with TurboPackr)
-- `npm run build` - Build the production application
-- `npm run start` - Start the production server
-- `npm run lint` - Run ESLint to check code quality
-
-## 🔒 Security Best Practices
-
-- Never commit `.env.local` to version control
-- Rotate API keys regularly
-- Keep dependencies updated
-- Implement proper authentication and authorization
-- Validate and sanitize all user inputs
-
-## 🌐 Deployment
-
-The project is optimized for deployment on Vercel:
-
-```bash
+# Build for production
 npm run build
+
+# Start production server
+npm run start
+
+# Run tests
+npm test
 ```
 
-## 📚 Further Resources
+## 🏗️ Current Status
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [React Documentation](https://react.dev)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs)
-- [Shadcn UI Documentation](https://ui.shadcn.com)
-- [Zod Documentation](https://zod.dev)
-- [Vercel AI SDK Documentation](https://sdk.vercel.ai/docs)
-- [nuqs Documentation](https://github.com/47ng/nuqs)
-- [Next.js Metadata API](https://nextjs.org/docs/app/building-your-application/optimizing/metadata)
+Market Sidekick is in active development. Here's the current status:
+
+### ✅ Implemented Features
+
+- **Core Application Structure**: Next.js project setup with TypeScript, Tailwind CSS, and shadcn/ui
+- **Layout and Navigation**: Main application layout with header, footer, and theme toggle
+- **Market Dashboard**: 
+  - Dashboard layout with responsive grid
+  - Market price display for major indices
+  - Key market indicators with status badges
+  - AI-powered explanations (accessible via "Ask AI" sheet)
+  - Interactive indicator cards with hover effects and dialog popups
+  - Top Watchlist table with stock data
+
+### 🔄 In Progress
+
+- **Indicator Card Dialog Enhancement**: Making dialog content dynamic based on the specific indicator
+- **Watchlist Screen**: Full implementation planned, will utilize existing StockTable component
+
+### 📝 Not Yet Implemented
+
+- **Stock Detail View**: Individual stock pages with comprehensive metrics
+- **Reflection Tool**: Guided reflection forms for investment decisions
+- **Settings Page**: Theme customization and preference management
+- **API Integrations**: Currently using mock data, real API integrations pending
+
+### ⚠️ Known Issues
+
+- All data is currently static/mock data
+- StockTable component has JSX escaping issues in the legend section
+- Indicator dialogs show static content and need to be made dynamic
+
+## 🏛️ Architecture & Design
+
+### 🧩 Component Patterns
+
+- **Compound Components**: Complex UI elements broken down into subcomponents
+- **Presentational and Container Components**: Separation between data/logic handling and presentation
+- **Component Composition**: Building complex interfaces from simpler components
+
+### 🔄 Data Flow Patterns
+
+- **Server Component Data Fetching**: Data is fetched server-side in server components
+- **Client-Side State Management**: React hooks for component-level state
+- **TypeScript Interface Contracts**: Clear data interfaces between components
+
+### 🎨 UI Patterns
+
+- **Responsive Design System**: Mobile-first approach using Tailwind breakpoints
+- **Consistent Status Indicators**: Color coding for indicating status (normal, warning, danger)
+- **Interactive Component Feedback**: Hover effects with visual elevation
+- **Progressive Disclosure**: Essential information first, with dialogs for details
+
+### 🔗 Component Relationships
+
+```mermaid
+graph TD
+    A[app/page.tsx] --> B[DashboardHeader]
+    A --> C[MarketPriceCard]
+    A --> D[IndicatorCard]
+    A --> E[StockTable]
+    
+    D --> D1[UI/Card]
+    D --> D2[UI/Badge]
+    D --> D3[UI/Sheet]
+    D --> D4[UI/Dialog]
+    D --> D5[Recharts/AreaChart]
+```
+
+## 🤝 Contributing
+
+We welcome contributions to Market Sidekick! Here's how you can contribute:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Open a pull request
+
+### 📏 Coding Standards
+
+- Follow TypeScript best practices
+- Use Tailwind CSS for styling
+- Implement responsive design for all components
+- Write clean, maintainable code with proper comments
+- Create reusable components when possible
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.

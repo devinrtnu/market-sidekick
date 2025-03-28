@@ -8,6 +8,8 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card"
       className={cn(
         "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        // Add dark theme gradient background
+        "dark:bg-gradient-to-b dark:from-[var(--gradient-darkest)] dark:via-[var(--gradient-darker)] dark:to-[var(--gradient-darkest)]",
         className
       )}
       {...props}

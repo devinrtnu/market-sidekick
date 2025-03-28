@@ -1,0 +1,202 @@
+# Market Sidekick - Project Intelligence
+
+This file captures key patterns, preferences, and learnings specific to the Market Sidekick project that will help ensure consistent, effective development. It incorporates general best practices from `.cursor/rules` (Next.js, TypeScript, Tailwind, shadcn/ui) tailored for this project.
+
+## Code Style & Formatting
+
+1.  **TypeScript Best Practices**
+    *   Prefer interfaces over types for object definitions (e.g., component props). Use `type` for unions, intersections.
+    *   Avoid `any`; use `unknown` if necessary.
+    *   Enable `strict` mode in `tsconfig.json`.
+    *   Use explicit types for component props and function return types (especially public functions).
+    *   Use Zod for runtime validation (e.g., forms, localStorage).
+    *   Leverage discriminated unions and type guards for type safety.
+
+2.  **Naming Conventions**
+    *   **Types/Interfaces:** PascalCase (e.g., `StockData`, `ButtonProps`). Prefix React prop interfaces with `Props`.
+    *   **Components:** PascalCase for files and component names (e.g., `StockTable.tsx`, `StockTable`).
+    *   **Variables/Functions:** camelCase (e.g., `marketPrices`, `getRSIColorClass`). Use descriptive names (e.g., `isLoading`).
+    *   **Constants:** UPPER_CASE (if applicable).
+    *   **CSS:** kebab-case (Tailwind utilities are inherently kebab-case or similar).
+    *   **Files:** Components `.tsx`, Utils `.ts`.
+
+3.  **Component Structure (Next.js & React)**
+    *   **Server Components by default.** Only use `'use client'` when necessary (hooks, event handlers, browser APIs).
+    *   Keep component definitions concise. Place static content and interfaces towards the end of the file if appropriate.
+    *   Organize components by feature/domain within `/components/` or route-specific within `/app/`.
+    *   Props interfaces defined at the top of component files or co-located.
+
+4.  **CSS/Tailwind Style Patterns**
+    *   Follow a mobile-first approach with responsive design (`sm:`, `md:`, `lg:` prefixes).
+    *   Group related Tailwind classes logically (layout, typography, colors, state). Use `@apply` sparingly if needed for complex reusable styles.
+    *   Use Tailwind's built-in dark mode with `dark:` prefix. Dark theme colors are defined as CSS variables in `globals.css`.
+    *   **Dark Theme Gradients:** For specific gradient effects in dark mode (e.g., Card backgrounds), apply Tailwind gradient utilities directly to components (`dark:bg-gradient-*`), referencing the `--gradient-*` CSS variables defined in `globals.css`.
+    *   Utilize Tailwind's customized theme values defined in `tailwind.config.ts`.
+    *   Ensure components are properly contained within page layouts using `container mx-auto px-4 sm:px-6` pattern.
+    *   Use `tailwind-merge` and `clsx` (via `lib/utils.ts`) for conditional class names.
+
+## shadcn/ui Specific Rules
+
+1.  **CRITICAL: Documentation First:** ALWAYS check official docs (`https://ui.shadcn.com/docs/components/[component-name]`) before using/implementing a component. Understand props, variants, anatomy, and dependencies.
+2.  **CRITICAL: Installation:** ALWAYS use `npx shadcn@latest add [component-name]` to install components. NEVER manually create or modify files in `/components/ui/`.
+3.  **CRITICAL: Organization:** Official shadcn components reside ONLY in `/components/ui/`. Custom components built using shadcn components go in `/components/` (e.g., `/components/dashboard/`).
+4.  **CRITICAL: Props & Variants:** Check docs for each component's specific props/variants. Do not assume consistency between components.
+5.  **Composition:** Build custom components by importing and composing shadcn components from `/components/ui/`.
+6.  **Theming:** Leverage CSS variables defined in `globals.css` for light/dark modes. Check docs for component-specific CSS variables.
+
+## Project-Specific Patterns
+
+1.  **Market Status Visual Cues**
+    *   "normal" status: Default text colors, potentially green indicators if positive.
+    *   "warning" status: Yellow/amber colors (e.g., `text-yellow-600`, `bg-yellow-100`).
+    *   "danger" status: Red colors (e.g., `text-red-600`, `bg-red-100`).
+    *   Trend "up": Green colors (`text-green-600`) with up arrow icon.
+    *   Trend "down": Red colors (`text-red-600`) with down arrow icon.
+
+2.  **Financial Data Formatting**
+    *   Display percentages with `%` sign and appropriate color based on value (positive/negative).
+    *   Currency values include `$` sign for USD.
+    *   Show `+` sign explicitly for positive changes.
+    *   Keep consistent decimal precision (e.g., 2 places for prices, 1 for RSI). Use `toFixed()`. Handle `undefined` or `null` gracefully (e.g., display 'N/A').
+
+3.  **Explanation Patterns (IndicatorCard)**
+    *   Simple, plain language.
+    *   Bullet point format (currently array of strings).
+    *   3-4 points per explanation.
+    *   Use `Sheet` component with "Ask AI" button for explanations.
+
+4.  **Interactive UI Patterns**
+    *   Use hover effects with visual feedback (elevation, shadow, border color).
+    *   Implement transition effects using `transition-all duration-300`.
+    *   Use React `useState` for tracking interaction states.
+    *   Manage event propagation with `stopPropagation()` for nested interactive elements.
+    *   Use cursor changes (`cursor-pointer`) to indicate interactive elements.
+
+5.  **Information Architecture**
+    *   Primary information: Always visible in component body
+    *   Secondary information: Available through expandable UI
+       * Use `Dialog` for detailed views (triggered by clicking indicator cards)
+       * Use `Sheet` for explanatory content ("Ask AI" feature)
+    *   Tertiary information: Revealed through interactive elements
+       * Use tooltips for data inspection (sparkline data points)
+
+6.  **Component Composition**
+    *   Use `Card` for discrete information blocks.
+    *   Use Grid layouts (`grid`, `grid-cols-*`) for responsive organization.
+    *   Use `Separator` for visual division.
+    *   Use `Tabs` for organizing related content sections if needed.
+
+## File Organization (Next.js App Router)
+
+1.  **App Router:** Structure follows `app/` directory conventions.
+2.  **Components:**
+    *   `/components/ui/`: ONLY official shadcn components.
+    *   `/components/`: Shared custom components (e.g., `Header`, `Footer`).
+    *   `/components/[feature]/`: Custom components specific to a feature (e.g., `/components/dashboard/`).
+    *   Route-specific components can live within `app/` subdirectories if not reusable.
+3.  **Utilities:** `/lib/` (e.g., `utils.ts`, `storage.ts`).
+4.  **Types:** Define close to usage. Shared types in `/types/` or `/lib/types.ts` if needed.
+5.  **API Routes:** `/app/api/`.
+6.  **Static Assets:** `/public/`.
+7.  **Memory Bank:** `/memory-bank/`.
+
+## Implementation Best Practices
+
+1.  **Server vs. Client Components (Next.js)**
+    *   Default to Server Components for pages and data display.
+    *   Use Client Components (`'use client'`) for interactivity (hooks, event handlers). Wrap client components in `Suspense` if needed.
+    *   Ensure interactive components like IndicatorCard are properly marked with 'use client' directive.
+    *   Minimize client-side JavaScript bundle size.
+
+2.  **Data Fetching Strategy (Next.js)**
+    *   Fetch data primarily in Server Components (using `async`/`await`).
+    *   Use client-side fetching (e.g., `useEffect`, SWR, TanStack Query) only when necessary (real-time, post-interaction).
+    *   Implement proper loading states (e.g., Suspense, manual loading UI).
+    *   Implement robust error handling for data fetching (e.g., `try/catch`, error boundaries).
+    *   Currently using mock data; plan for API integration.
+
+3.  **State Management**
+    *   Prefer local component state (`useState`) for UI state.
+    *   Use React Context (`createContext`) sparingly for global state (e.g., theme, user settings).
+    *   Consider URL state (`next/navigation`, `nuqs`) for shareable/bookmarkable state.
+    *   Use `localStorage` (via type-safe wrapper in `/lib/storage.ts`) for persisting user preferences and watchlist data.
+
+4.  **Error Handling**
+    *   Implement proper error boundaries (`error.tsx` in App Router).
+    *   Use `try/catch` for async operations.
+    *   Provide user-friendly error messages.
+
+## Component Design Patterns
+
+1.  **Card Patterns (shadcn)**
+    *   Use `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`.
+    *   Apply gradient backgrounds in dark mode via `dark:bg-gradient-to-b` classes.
+    *   Implement hover effects with shadow and transform properties.
+    *   Use consistent padding and spacing.
+
+2.  **Form Patterns (shadcn & React Hook Form)**
+    *   Use `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormDescription`, `FormMessage`.
+    *   Integrate with `react-hook-form` and `zod` for validation.
+
+3.  **Table Patterns (shadcn)**
+    *   Use `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell`, `TableCaption`.
+    *   Implement responsive design (e.g., horizontal scrolling on mobile).
+    *   Consider conditional rendering for different screen sizes if needed.
+
+4.  **Chart Patterns**
+    *   Currently placeholders (`ChartComponent`).
+    *   Plan to evaluate libraries (recharts, visx).
+    *   Ensure clear titles, labels, legends, tooltips, and consistent colors.
+
+## Data Visualization Patterns
+
+1.  **Sparkline Implementation**
+    *   Use `recharts` `AreaChart` for small inline visualizations.
+    *   Implement with `ResponsiveContainer` for flexible sizing.
+    *   Include custom tooltips for data point inspection using custom `CustomTooltip` component.
+    *   Use color-coded gradients based on trend direction:
+        *   Positive: green colors (#10B981) for upward trends
+        *   Negative: red colors (#EF4444) for downward trends
+        *   Neutral: gray colors (#6B7280) for flat/unclear trends
+    *   Apply consistent stroke width (2px) and opacity settings.
+    *   Hide axes for minimal, clean appearance.
+    *   Tooltip displays date and value on hover for detailed data inspection.
+
+2.  **Table Data Visualization**
+    *   Use color-coded cells for numeric data in `StockTable` component.
+    *   Implement conditional styling based on financial metrics (e.g., RSI, Moving Averages).
+    *   Helper functions for generating color classes (e.g., `getRSIColorClass`, `getMAComparisonClass`).
+    *   Consistent color patterns matching overall visual language:
+        *   Bullish/positive: green colors
+        *   Bearish/negative: red colors
+        *   Neutral/normal: default text colors
+    *   Include legend explaining color-coding system to users.
+    *   Support showing/hiding extended metrics (`showExtendedMetrics` prop).
+
+## Interaction Handling Patterns
+
+1.  **Event Propagation Management**
+    *   Use `stopPropagation()` on click handlers for nested interactive elements
+    *   Example: "Ask AI" button inside a dialog-triggering card should not open the dialog when clicked
+    *   Isolate interaction areas with specific roles (e.g., title area as dialog trigger)
+    *   Use `onMouseEnter` and `onMouseLeave` for hover state management
+
+2.  **State Management for Visual Effects**
+    *   Track interaction states with `useState` hooks
+    *   Apply conditional classes using the `cn` utility from `lib/utils.ts`
+    *   Use CSS transitions for smooth animations between states
+
+## Known Challenges & Solutions
+
+1.  **Chart Implementation:** Using recharts for interactive visualizations.
+2.  **Mobile Table Display:** Horizontal scrolling is the current approach. Card views are an alternative if scrolling is insufficient.
+3.  **Data Persistence:** Using type-safe `localStorage` wrapper.
+4.  **API Integration:** Plan to create adaptable data fetching layer.
+5.  **StockTable Legend Issue:** Persistent JSX escaping errors reported in `StockTable` legend. Requires further investigation or manual fix if tools fail.
+6.  **Dialog/Sheet Content Management:** Need to create dynamic content based on indicator type.
+
+## Optimization Goals
+
+1.  **Performance:** Minimize client JS, optimize rendering, use Next.js features (RSC, dynamic imports), implement caching.
+2.  **Accessibility:** Aim for WCAG 2.1 AA (semantic HTML, keyboard nav, contrast, ARIA). Use shadcn's accessible components.
+3.  **User Experience:** Consistent loading/error states, intuitive navigation, responsive design.

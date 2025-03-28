@@ -100,37 +100,58 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  /* --- New Gradient Color Stops --- */
+  --gradient-darkest: oklch(0 0 0); /* Approx gray-950 */
+  --gradient-darker: oklch(0.18 0.01 263.85);  /* Approx gray-900 */
+  --gradient-dark: oklch(0.26 0.0 264.34);   /* Approx gray-800 */
+  --gradient-medium: oklch(0.34 0.01 265); /* Approx gray-700 */
+
+  /* --- Updated Core Theme Variables --- */
+  --background: var(--gradient-darker); /* Base background */
+  --foreground: oklch(0.985 0 0); /* Keep light text */
+
+  /* Card/Popover - Base color, gradients applied via utility */
+  --card: var(--gradient-darker);
+  --card-foreground: var(--foreground);
+  --popover: var(--gradient-darker);
+  --popover-foreground: var(--foreground);
+
+  /* Primary - Adjust if needed, maybe keep for contrast */
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+
+  /* Secondary/Muted/Accent - Use darker grays */
+  --secondary: var(--gradient-dark);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--gradient-dark);
+  --muted-foreground: oklch(0.708 0 0); /* Keep dimmer light text */
+  --accent: var(--gradient-dark);
+  --accent-foreground: var(--foreground);
+
+  /* Destructive - Keep existing or adjust slightly */
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+
+  /* Borders/Inputs/Ring - Use darker grays */
+  --border: var(--gradient-dark); /* Darker border */
+  --input: oklch(0.30 0.01 265); /* Slightly lighter than border */
+  --ring: oklch(0.556 0 0); /* Keep for focus */
+
+  /* Chart colors - Keep existing for now */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+
+  /* Sidebar - Align with new dark theme */
+  --sidebar: var(--gradient-darker);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: oklch(0.488 0.243 264.376); /* Keep chart color? */
+  --sidebar-primary-foreground: var(--foreground);
+  --sidebar-accent: var(--gradient-dark);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--gradient-dark);
+  --sidebar-ring: var(--ring);
 }
 
 @layer base {
