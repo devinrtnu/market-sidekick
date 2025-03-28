@@ -10,9 +10,9 @@ export async function GET() {
   try {
     console.log('[DEBUG API] Fetching latest put-call ratio data directly from database...');
     
-    // Get latest data from database
+    // Get latest data from database (use the correct daily_put_call_ratios table)
     const { data: latestData, error: latestError } = await supabaseAdmin
-      .from('put_call_ratios')
+      .from('daily_put_call_ratios')
       .select('*')
       .order('date', { ascending: false })
       .limit(1)
@@ -23,9 +23,9 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch latest data' }, { status: 500 });
     }
     
-    // Get all data for debugging
+    // Get all data for debugging (use the correct daily_put_call_ratios table)
     const { data: allData, error: allError } = await supabaseAdmin
-      .from('put_call_ratios')
+      .from('daily_put_call_ratios')
       .select('*')
       .order('date', { ascending: false })
       .limit(10);
